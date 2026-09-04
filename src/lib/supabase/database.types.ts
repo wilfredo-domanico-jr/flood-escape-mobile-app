@@ -186,6 +186,16 @@ export type Database = {
         };
         Returns: { score: number; level: ConfidenceLevel; reasons: string[] }[];
       };
+      verify_report: {
+        Args: {
+          p_client_id: string;
+          p_report_id: string;
+          p_kind: VerificationKind;
+          p_lat?: number;
+          p_lng?: number;
+        };
+        Returns: Json;
+      };
       report_detail: {
         Args: { p_report_id: string };
         Returns: Json;

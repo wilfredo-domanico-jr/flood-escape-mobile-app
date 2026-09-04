@@ -34,6 +34,7 @@ export function syncOutbox(): Promise<DrainResult> {
       if (result.sent > 0) {
         await queryClient.invalidateQueries({ queryKey: ["reports"] });
         await queryClient.invalidateQueries({ queryKey: ["me"] });
+        await queryClient.invalidateQueries({ queryKey: ["report"] });
       }
       return result;
     } finally {

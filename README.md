@@ -19,8 +19,9 @@ Work in progress, built in phases. See [Roadmap](#roadmap).
 | 3 | Map with viewport-scoped reports, location handling, PostGIS read RPCs | Done |
 | 4 | Fast reporting flow, SQLite outbox with idempotent retries, photo compression, storage policies, write RPCs with rate limits | Done |
 | 5 | Report details with confidence explanation, activity, author close action | Done |
-| 6 | Verification + confidence model + lifecycle | Next |
-| 7–12 | Realtime, offline sync, route safety, evacuation centers, push notifications, testing and polish | Planned |
+| 6 | Verification RPC with abuse rules, explainable confidence (SQL + TS mirror, 600-case fixture), lifecycle triggers and cron sweep | Done |
+| 7 | Realtime updates | Next |
+| 8–12 | Offline sync polish, route safety, evacuation centers, push notifications, testing and polish | Planned |
 
 ## Tech stack
 

@@ -60,8 +60,15 @@ export const supabaseTransport: Transport = {
   },
   uploadPhoto: uploadReportPhoto,
   attachMedia: attachReportMedia,
-  async verify() {
-    throw Object.assign(new Error("verification_unavailable"), { code: "P0001" });
+  async verify(clientId, payload) {
+    const { error } = await supabase.rpc("verify_report", {
+      p_client_id: clientId,
+      p_report_id: payload.reportId,
+      p_kind: payload.kind,
+      p_lat: payload.lat ?? undefined,
+      p_lng: payload.lng ?? undefined,
+    });
+    if (error) throw error;
   },
   discardPhoto: deleteStashedPhoto,
 };
