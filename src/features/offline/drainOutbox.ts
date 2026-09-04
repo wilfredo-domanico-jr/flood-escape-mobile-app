@@ -20,6 +20,15 @@ export interface Transport {
 
 export type DrainResult = { sent: number; deferred: number; failed: number };
 
+export type DrainOptions = {
+  /** Return false to hold photo uploads (e.g. "Wi-Fi only"); reports still go out. */
+  canSendMedia?: () => boolean;
+};
+
+/** How long a held photo waits before the next check. */
+export const MEDIA_HOLD_MS = 5 * 60_000;
+const MEDIA_HOLD_MESSAGE = "Waiting for Wi-Fi to upload the photo.";
+
 export const MAX_ATTEMPTS = 8;
 
 /** 30 s, 1 min, 2 min, ... capped at 30 min. */
@@ -68,14 +77,21 @@ export async function drainOutbox(
   store: OutboxStore,
   transport: Transport,
   now: () => number = () => Date.now(),
+  options: DrainOptions = {},
 ): Promise<DrainResult> {
   const result: DrainResult = { sent: 0, deferred: 0, failed: 0 };
   const due = await store.listDue(now());
+  const canSendMedia = options.canSendMedia ?? (() => true);
 
   for (const row of due) {
+    if (row.kind === "media" && !canSendMedia()) {
+      await store.markPending(row.clientId, row.attempts, now() + MEDIA_HOLD_MS, MEDIA_HOLD_MESSAGE);
+      result.deferred += 1;
+      continue;
+    }
     await store.markSending(row.clientId);
     try {
-      await sendRow(row, store, transport);
+      await sendRow(row, store, transport, canSendMedia, now);
       result.sent += 1;
     } catch (error) {
       const attempts = row.attempts + 1;
@@ -91,7 +107,13 @@ export async function drainOutbox(
   return result;
 }
 
-async function sendRow(row: OutboxRow, store: OutboxStore, transport: Transport): Promise<void> {
+async function sendRow(
+  row: OutboxRow,
+  store: OutboxStore,
+  transport: Transport,
+  canSendMedia: () => boolean,
+  now: () => number,
+): Promise<void> {
   switch (row.kind) {
     case "report": {
       const payload = parsePayload<ReportPayload>(row);
@@ -99,6 +121,10 @@ async function sendRow(row: OutboxRow, store: OutboxStore, transport: Transport)
       if (row.photoUri) {
         // The report exists now; from here on only the photo can fail.
         await store.convertToMedia(row.clientId, id);
+        if (!canSendMedia()) {
+          await store.markPending(row.clientId, 0, now() + MEDIA_HOLD_MS, MEDIA_HOLD_MESSAGE);
+          return;
+        }
         await sendMedia({ ...row, kind: "media", reportId: id }, store, transport);
       } else {
         await store.remove(row.clientId);

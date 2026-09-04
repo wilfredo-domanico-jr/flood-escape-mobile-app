@@ -3,6 +3,7 @@ import { type PropsWithChildren, useEffect, useRef } from "react";
 
 import { useNetworkSync } from "@/hooks/useNetwork";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase/client";
+import { usePrefsStore } from "@/store/usePrefsStore";
 
 import { describeAuthError, signInAnonymously } from "./api";
 import { useAuthStore } from "./authStore";
@@ -49,7 +50,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [done, { data }] = await Promise.all([getOnboardingDone(), supabase.auth.getSession()]);
+      const [done, { data }] = await Promise.all([
+        getOnboardingDone(),
+        supabase.auth.getSession(),
+        usePrefsStore.getState().hydrate(),
+      ]);
       if (cancelled) return;
       useAuthStore.getState().setReady(data.session, done);
       await SplashScreen.hideAsync().catch(() => {});

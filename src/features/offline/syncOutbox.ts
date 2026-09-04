@@ -2,6 +2,7 @@ import { supabaseTransport } from "@/features/reports/api";
 import { queryClient } from "@/lib/query/queryClient";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { useAppStore } from "@/store/useAppStore";
+import { usePrefsStore } from "@/store/usePrefsStore";
 
 import { drainOutbox, type DrainResult } from "./drainOutbox";
 import { sqliteOutbox } from "./outbox";
@@ -30,7 +31,9 @@ export function syncOutbox(): Promise<DrainResult> {
     }
     useAppStore.getState().setSync("syncing", useAppStore.getState().pendingCount);
     try {
-      const result = await drainOutbox(sqliteOutbox, supabaseTransport);
+      const result = await drainOutbox(sqliteOutbox, supabaseTransport, () => Date.now(), {
+        canSendMedia: () => !usePrefsStore.getState().wifiOnlyPhotos || useAppStore.getState().isWifi,
+      });
       if (result.sent > 0) {
         await queryClient.invalidateQueries({ queryKey: ["reports"] });
         await queryClient.invalidateQueries({ queryKey: ["me"] });

@@ -1,4 +1,4 @@
-import { effectiveStatus, isActionable, STALE_TO_RESOLVED_MS, staleWindowMs } from "./lifecycle";
+import { effectiveStatus, isActionable, overlayLifecycle, STALE_TO_RESOLVED_MS, staleWindowMs } from "./lifecycle";
 
 const NOW = Date.parse("2026-09-04T12:00:00Z");
 const at = (offsetMs: number) => new Date(NOW + offsetMs).toISOString();
@@ -40,5 +40,26 @@ describe("isActionable", () => {
     expect(isActionable("resolved")).toBe(false);
     expect(isActionable("stale")).toBe(true);
     expect(isActionable("disputed")).toBe(true);
+  });
+});
+
+describe("overlayLifecycle", () => {
+  const row = (id: string, expiresIn: number, status: "active" | "stale" = "active") => ({
+    id,
+    stored_status: status,
+    effective_status: status,
+    expires_at: at(expiresIn),
+  });
+
+  it("keeps identity when nothing changed", () => {
+    const rows = [row("a", 60_000)];
+    expect(overlayLifecycle(rows, NOW)).toBe(rows);
+  });
+
+  it("marks expired rows stale without touching others", () => {
+    const rows = [row("a", -1), row("b", 60_000)];
+    const next = overlayLifecycle(rows, NOW);
+    expect(next[0].effective_status).toBe("stale");
+    expect(next[1]).toBe(rows[1]);
   });
 });

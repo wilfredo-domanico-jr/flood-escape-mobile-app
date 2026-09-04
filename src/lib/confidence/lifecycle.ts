@@ -30,3 +30,21 @@ export function effectiveStatus(row: LifecycleRow, now: number = Date.now()): Re
 export function isActionable(status: ReportStatus): boolean {
   return status !== "resolved";
 }
+
+/**
+ * Re-derives `effective_status` for cached rows so data that aged while offline is shown as
+ * stale/resolved. Returns the same array when nothing changed.
+ */
+export function overlayLifecycle<T extends LifecycleRow & { effective_status: ReportStatus }>(
+  rows: T[],
+  now: number = Date.now(),
+): T[] {
+  let changed = false;
+  const next = rows.map((r) => {
+    const status = effectiveStatus(r, now);
+    if (status === r.effective_status) return r;
+    changed = true;
+    return { ...r, effective_status: status };
+  });
+  return changed ? next : rows;
+}

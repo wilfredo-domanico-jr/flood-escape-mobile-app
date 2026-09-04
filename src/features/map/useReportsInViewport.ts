@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { MAX_VIEWPORT_SPAN_DEG } from "@/constants/thresholds";
+import { overlayLifecycle } from "@/lib/confidence/lifecycle";
 import { type Bbox, bboxKey, clampBbox, expandBbox, snapBbox } from "@/lib/geo/bbox";
 import type { PublicReport } from "@/lib/supabase/database.types";
 
@@ -26,5 +27,11 @@ export function useReportsInViewport(viewport: Bbox | null, enabled = true) {
     staleTime: 20_000,
   });
 
-  return { ...query, bbox, reports: (query.data ?? []) as PublicReport[] };
+  // Cached rows may have aged while offline; show them as stale rather than fresh.
+  const reports = useMemo(() => {
+    const rows = overlayLifecycle((query.data ?? []) as PublicReport[]);
+    return rows.filter((r) => r.effective_status !== "resolved");
+  }, [query.data]);
+
+  return { ...query, bbox, reports };
 }

@@ -196,6 +196,10 @@ export type Database = {
         };
         Returns: Json;
       };
+      delete_my_data: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
       report_detail: {
         Args: { p_report_id: string };
         Returns: Json;

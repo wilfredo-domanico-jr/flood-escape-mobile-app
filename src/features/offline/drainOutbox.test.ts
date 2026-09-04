@@ -186,6 +186,26 @@ describe("drainOutbox", () => {
   });
 });
 
+describe("drainOutbox media hold", () => {
+  it("sends the report but holds the photo when media is not allowed", async () => {
+    const store = new MemoryStore();
+    await store.insert(reportRow("a", { photoUri: "file:///p.jpg" }));
+    const t = fakeTransport();
+    const res = await drainOutbox(store, t, () => 1000, { canSendMedia: () => false });
+    expect(t.calls).toEqual(["create:a"]);
+    expect(res.sent).toBe(1);
+    const row = store.rows.get("a")!;
+    expect(row.kind).toBe("media");
+    expect(row.status).toBe("pending");
+    expect(row.lastError).toMatch(/Wi-Fi/);
+
+    // Once allowed, only the photo goes out.
+    await drainOutbox(store, t, () => row.nextAttemptAt + 1, { canSendMedia: () => true });
+    expect(t.calls).toEqual(["create:a", "upload:server-a", "attach:server-a"]);
+    expect(store.rows.size).toBe(0);
+  });
+});
+
 describe("isRetryable", () => {
   it("classifies errors", () => {
     expect(isRetryable(new TypeError("Network request failed"))).toBe(true);

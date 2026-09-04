@@ -52,7 +52,11 @@ export default function SettingsScreen() {
         </Pressable>
       </Link>
       <Row icon="notifications" title="Notifications" subtitle="Coming soon" disabled />
-      <Row icon="shield-checkmark" title="Privacy" subtitle="Coming soon" disabled />
+      <Link href="/settings/privacy" asChild>
+        <Pressable accessibilityRole="button">
+          <Row icon="shield-checkmark" title="Privacy" subtitle="Location blur, photo uploads, delete my data" />
+        </Pressable>
+      </Link>
       <SupabaseStatus />
       <Text className="mt-4 text-center text-xs text-ink-muted">Flood Escape {version}</Text>
     </ScrollView>

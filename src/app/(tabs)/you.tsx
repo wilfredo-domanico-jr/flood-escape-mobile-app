@@ -1,9 +1,13 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Link } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
+import { Pressable, RefreshControl, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { Screen } from "@/components/ui/Screen";
+import { ActivityList } from "@/features/activity/ActivityList";
+import { syncOutbox } from "@/features/offline/syncOutbox";
 import { colors } from "@/constants/theme";
 import { selectIsAnonymous, selectUser, useAuthStore } from "@/features/auth/authStore";
 import { useProfile } from "@/features/auth/useProfile";
@@ -14,9 +18,16 @@ export default function YouTab() {
   const isAnonymous = useAuthStore(selectIsAnonymous);
   const signInError = useAuthStore((s) => s.signInError);
   const profile = useProfile();
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([syncOutbox(), queryClient.invalidateQueries({ queryKey: ["me"] })]);
+    setRefreshing(false);
+  }, [queryClient]);
 
   return (
-    <Screen>
+    <Screen refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <View className="flex-row items-center justify-between">
         <Text className="text-3xl font-bold text-ink">You</Text>
         <Link href="/settings" asChild>
@@ -65,12 +76,7 @@ export default function YouTab() {
         )}
       </View>
 
-      <View className="mt-6 rounded-card bg-surface-muted p-4">
-        <Text className="text-sm font-semibold uppercase tracking-wide text-ink-muted">Activity</Text>
-        <Text className="mt-1 text-base text-ink-secondary">
-          Your reports and verifications will appear here once reporting is live.
-        </Text>
-      </View>
+      <View className="mt-6">{user ? <ActivityList /> : null}</View>
     </Screen>
   );
 }

@@ -6,6 +6,7 @@ import { syncOutbox } from "@/features/offline/syncOutbox";
 import { compressPhoto, stashPhotoForOutbox } from "@/lib/media/compressPhoto";
 import type { ReportInput } from "@/lib/validation/report";
 import { useAppStore } from "@/store/useAppStore";
+import { blurCoordinate, usePrefsStore } from "@/store/usePrefsStore";
 
 import type { PickedPhoto } from "./PhotoPicker";
 
@@ -31,10 +32,11 @@ export function useSubmitReport() {
         photoUri = stashPhotoForOutbox(compressed.uri, clientId);
         photoMeta = { width: compressed.width, height: compressed.height };
       }
+      const blur = usePrefsStore.getState().blurMyLocation;
       const payload: ReportPayload = {
-        lat: input.lat,
-        lng: input.lng,
-        accuracyM: input.accuracyM,
+        lat: blur ? blurCoordinate(input.lat) : input.lat,
+        lng: blur ? blurCoordinate(input.lng) : input.lng,
+        accuracyM: blur ? Math.max(input.accuracyM ?? 0, 100) : input.accuracyM,
         severity: input.severity,
         description: input.description,
         photo: photoMeta,
