@@ -1,6 +1,6 @@
 import type BottomSheet from "@gorhom/bottom-sheet";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import MapView, { Circle, type Region } from "react-native-maps";
@@ -24,6 +24,7 @@ import { RoundButton, StatusChip } from "./MapControls";
 import { NearbyReportsSheet, type SheetItem } from "./NearbyReportsSheet";
 import { ReportMarker } from "./ReportMarker";
 import { useReportsInViewport } from "./useReportsInViewport";
+import { useReportsRealtime } from "./useReportsRealtime";
 
 export function HomeMap() {
   const insets = useSafeAreaInsets();
@@ -38,9 +39,18 @@ export function HomeMap() {
   const [viewport, setLocalViewport] = useState<Bbox | null>(regionToBbox(DEFAULT_REGION));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [followUser, setFollowUser] = useState(true);
+  const [focused, setFocused] = useState(false);
   const centeredOnce = useRef(false);
 
-  const { reports, isFetching, dataUpdatedAt, isError } = useReportsInViewport(viewport);
+  useFocusEffect(
+    useCallback(() => {
+      setFocused(true);
+      return () => setFocused(false);
+    }, []),
+  );
+
+  const { reports, isFetching, dataUpdatedAt, isError, bbox: queryBbox } = useReportsInViewport(viewport);
+  const realtime = useReportsRealtime(queryBbox, focused);
   const pending = usePendingReports();
   const pendingReports = useMemo(
     () => pending.filter((p) => p.kind === "report" && p.status !== "failed").map(pendingToPublicReport),
@@ -147,6 +157,15 @@ export function HomeMap() {
       <View pointerEvents="box-none" className="absolute left-0 right-0 px-4" style={{ top: insets.top + 8 }}>
         <View className="flex-row flex-wrap items-center gap-2">
           {!isOnline ? <StatusChip icon="cloud-offline-outline" label="Offline" color={colors.inkMuted} /> : null}
+          {isOnline && realtime.state === "live" ? (
+            <StatusChip icon="radio-outline" label="Live" color={colors.confidence.high} />
+          ) : null}
+          {isOnline && realtime.state === "paused" ? (
+            <StatusChip icon="pause-circle-outline" label="Live updates paused" color={colors.inkMuted} />
+          ) : null}
+          {isOnline && realtime.state === "too-wide" ? (
+            <StatusChip icon="search-outline" label="Zoom in for live updates" color={colors.inkMuted} />
+          ) : null}
           {isError && isOnline ? (
             <StatusChip icon="alert-circle-outline" label="Server unreachable" color={colors.severity.caution} />
           ) : null}
