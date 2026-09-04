@@ -22,8 +22,9 @@ Work in progress, built in phases. See [Roadmap](#roadmap).
 | 6 | Verification RPC with abuse rules, explainable confidence (SQL + TS mirror, 600-case fixture), lifecycle triggers and cron sweep | Done |
 | 7 | Realtime updates scoped to viewport grid cells, focus/app-state lifecycle, cache patching | Done |
 | 8 | Offline banner, client-side staleness for cached rows, Activity with retry/discard, Wi-Fi-only photos, location blur, delete my data | Done |
-| 9 | Route safety | Next |
-| 10–12 | Evacuation centers, push notifications, testing and polish | Planned |
+| 9 | Route safety: openrouteservice behind an Edge Function, buffered PostGIS route query, explainable risk levels, saved routes | Done |
+| 10 | Evacuation centers | Next |
+| 11–12 | Push notifications, testing and polish | Planned |
 
 ## Tech stack
 

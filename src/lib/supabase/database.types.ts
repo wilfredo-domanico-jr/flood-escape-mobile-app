@@ -70,6 +70,19 @@ type ReportVerificationRow = {
   created_at: string;
 };
 
+type SavedRouteRow = {
+  id: string;
+  user_id: string;
+  name: string;
+  origin_label: string | null;
+  destination_label: string | null;
+  route_line: unknown;
+  buffer_m: number;
+  notify: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 type PublicFloodReportRow = {
   id: string;
   severity: FloodSeverity;
@@ -128,6 +141,12 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      saved_routes: {
+        Row: SavedRouteRow;
+        Insert: never;
+        Update: Partial<Pick<SavedRouteRow, "name" | "notify" | "buffer_m">>;
+        Relationships: [];
+      };
     };
     Views: {
       public_flood_reports: {
@@ -136,6 +155,20 @@ export type Database = {
       };
       my_reports: {
         Row: PublicFloodReportRow & { reporter_id: string };
+        Relationships: [];
+      };
+      my_saved_routes: {
+        Row: {
+          id: string;
+          name: string;
+          origin_label: string | null;
+          destination_label: string | null;
+          buffer_m: number;
+          notify: boolean;
+          created_at: string;
+          updated_at: string;
+          route_geojson: Json;
+        };
         Relationships: [];
       };
     };
@@ -199,6 +232,21 @@ export type Database = {
       delete_my_data: {
         Args: Record<string, never>;
         Returns: undefined;
+      };
+      reports_along_route: {
+        Args: { p_route_geojson: string; p_buffer_m?: number };
+        Returns: (PublicFloodReportRow & { distance_m: number })[];
+      };
+      save_route: {
+        Args: { p_name: string; p_route_geojson: string; p_origin_label?: string; p_destination_label?: string };
+        Returns: {
+          id: string;
+          name: string;
+          origin_label: string | null;
+          destination_label: string | null;
+          notify: boolean;
+          created_at: string;
+        }[];
       };
       report_detail: {
         Args: { p_report_id: string };
