@@ -8,6 +8,7 @@ import "react-native-reanimated";
 
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { useAuthStore } from "@/features/auth/authStore";
+import { OutboxRunner } from "@/features/offline/OutboxRunner";
 import { QUERY_CACHE_MAX_AGE_MS, queryClient, queryPersister } from "@/lib/query/queryClient";
 
 export const unstable_settings = {
@@ -39,6 +40,7 @@ export default function RootLayout() {
         persistOptions={{ persister: queryPersister, maxAge: QUERY_CACHE_MAX_AGE_MS }}
       >
         <AuthProvider>
+          <OutboxRunner />
           <RootStack />
         </AuthProvider>
         <StatusBar style="auto" />

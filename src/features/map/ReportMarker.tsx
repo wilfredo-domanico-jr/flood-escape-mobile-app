@@ -10,9 +10,11 @@ type Props = {
   report: PublicReport;
   selected: boolean;
   onPress: (id: string) => void;
+  /** Queued locally, not yet on the server. */
+  pending?: boolean;
 };
 
-function ReportMarkerInner({ report, selected, onPress }: Props) {
+function ReportMarkerInner({ report, selected, onPress, pending }: Props) {
   const meta = SEVERITY_META[report.severity];
   const stale = report.effective_status === "stale";
   const resolved = report.effective_status === "resolved";
@@ -25,7 +27,7 @@ function ReportMarkerInner({ report, selected, onPress }: Props) {
       onPress={() => onPress(report.id)}
       anchor={{ x: 0.5, y: 0.5 }}
       tracksViewChanges={false}
-      accessibilityLabel={`${meta.label} flooding${stale ? ", may have receded" : ""}`}
+      accessibilityLabel={`${meta.label} flooding${pending ? ", sending" : stale ? ", may have receded" : ""}`}
       zIndex={selected ? 10 : report.confidence_level === "high" ? 3 : 1}
     >
       <View
@@ -37,6 +39,7 @@ function ReportMarkerInner({ report, selected, onPress }: Props) {
           opacity: stale || resolved ? 0.45 : 1,
           borderWidth: selected ? 4 : 3,
           borderColor: "#FFFFFF",
+          borderStyle: pending ? "dashed" : "solid",
           alignItems: "center",
           justifyContent: "center",
           shadowColor: "#000",
@@ -57,6 +60,7 @@ export const ReportMarker = memo(
   ReportMarkerInner,
   (a, b) =>
     a.selected === b.selected &&
+    a.pending === b.pending &&
     a.report.id === b.report.id &&
     a.report.updated_at === b.report.updated_at &&
     a.report.effective_status === b.report.effective_status,

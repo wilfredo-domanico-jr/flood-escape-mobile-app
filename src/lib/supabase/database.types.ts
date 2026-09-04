@@ -59,6 +59,17 @@ type ReportMediaRow = {
   created_at: string;
 };
 
+type ReportVerificationRow = {
+  id: string;
+  client_id: string;
+  report_id: string;
+  user_id: string;
+  kind: VerificationKind;
+  verifier_distance_m: number | null;
+  comment: string | null;
+  created_at: string;
+};
+
 type PublicFloodReportRow = {
   id: string;
   severity: FloodSeverity;
@@ -111,6 +122,12 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      report_verifications: {
+        Row: ReportVerificationRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: {
       public_flood_reports: {
@@ -137,6 +154,37 @@ export type Database = {
           p_limit?: number;
         };
         Returns: PublicFloodReportRow[];
+      };
+      create_flood_report: {
+        Args: {
+          p_client_id: string;
+          p_lat: number;
+          p_lng: number;
+          p_severity: FloodSeverity;
+          p_accuracy_m?: number;
+          p_description?: string;
+        };
+        Returns: PublicFloodReportRow[];
+      };
+      attach_report_media: {
+        Args: { p_report_id: string; p_storage_path: string; p_width?: number; p_height?: number; p_bytes?: number };
+        Returns: undefined;
+      };
+      resolve_own_report: {
+        Args: { p_report_id: string };
+        Returns: PublicFloodReportRow[];
+      };
+      compute_confidence: {
+        Args: {
+          p_age_min: number;
+          p_confirms: number;
+          p_clears: number;
+          p_nearby: number;
+          p_has_photo: boolean;
+          p_reputation: number;
+          p_confirmed_later?: boolean;
+        };
+        Returns: { score: number; level: ConfidenceLevel; reasons: string[] }[];
       };
       reports_near: {
         Args: { p_lat: number; p_lng: number; p_radius_m?: number; p_limit?: number };

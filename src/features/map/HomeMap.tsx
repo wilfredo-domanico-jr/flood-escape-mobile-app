@@ -14,6 +14,7 @@ import {
   RECENTER_THRESHOLD_M,
   USER_ZOOM_DELTA,
 } from "@/constants/thresholds";
+import { pendingToPublicReport, usePendingReports } from "@/features/offline/usePendingReports";
 import { useLocation } from "@/hooks/useLocation";
 import { type Bbox, bboxCenter, regionToBbox } from "@/lib/geo/bbox";
 import { haversineDistanceM } from "@/lib/geo/distance";
@@ -40,6 +41,11 @@ export function HomeMap() {
   const centeredOnce = useRef(false);
 
   const { reports, isFetching, dataUpdatedAt, isError } = useReportsInViewport(viewport);
+  const pending = usePendingReports();
+  const pendingReports = useMemo(
+    () => pending.filter((p) => p.kind === "report" && p.status !== "failed").map(pendingToPublicReport),
+    [pending],
+  );
 
   // First fix: jump to the user once, then let them pan freely.
   useEffect(() => {
@@ -88,13 +94,19 @@ export function HomeMap() {
   const originLng = fix ? fix.lng : region.longitude;
   const items = useMemo<SheetItem[]>(() => {
     const origin = { lat: originLat, lng: originLng };
-    return reports
+    const queued: SheetItem[] = pendingReports.map((report) => ({
+      report,
+      distanceM: haversineDistanceM(origin, { lat: report.lat, lng: report.lng }),
+      pending: true,
+    }));
+    const synced = reports
       .map((report) => ({
         report,
         distanceM: haversineDistanceM(origin, { lat: report.lat, lng: report.lng }),
       }))
       .sort((a, b) => (a.distanceM ?? 0) - (b.distanceM ?? 0));
-  }, [reports, originLat, originLng]);
+    return [...queued, ...synced];
+  }, [reports, pendingReports, originLat, originLng]);
 
   const userFarFromView =
     fix && !followUser && haversineDistanceM({ lat: fix.lat, lng: fix.lng }, bboxCenter(regionToBbox(region))) > RECENTER_THRESHOLD_M;
@@ -125,6 +137,9 @@ export function HomeMap() {
         ) : null}
         {reports.map((r) => (
           <ReportMarker key={r.id} report={r} selected={r.id === selectedId} onPress={openReport} />
+        ))}
+        {pendingReports.map((r) => (
+          <ReportMarker key={r.id} report={r} selected={false} onPress={() => {}} pending />
         ))}
       </MapView>
 
@@ -194,7 +209,9 @@ export function HomeMap() {
         loading={isFetching && reports.length === 0}
         offline={!isOnline}
         lastUpdatedAt={dataUpdatedAt || null}
-        onSelect={openReport}
+        onSelect={(id) => {
+          if (!id.startsWith("pending:")) openReport(id);
+        }}
       />
     </View>
   );

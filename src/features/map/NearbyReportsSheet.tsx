@@ -8,7 +8,7 @@ import type { PublicReport } from "@/lib/supabase/database.types";
 
 import { ReportCard } from "../reports/ReportCard";
 
-export type SheetItem = { report: PublicReport; distanceM: number | null };
+export type SheetItem = { report: PublicReport; distanceM: number | null; pending?: boolean };
 
 type Props = {
   items: SheetItem[];
@@ -25,7 +25,7 @@ export const NearbyReportsSheet = forwardRef<BottomSheet, Props>(function Nearby
   { items, selectedId, loading, offline, lastUpdatedAt, onSelect },
   ref,
 ) {
-  const active = items.filter((i) => i.report.effective_status !== "stale");
+  const active = items.filter((i) => i.report.effective_status !== "stale" && !i.pending);
   const onlyStale = items.length > 0 && active.length === 0;
   const newest = useMemo(
     () => items.reduce<string | null>((acc, i) => (!acc || i.report.last_confirmed_at > acc ? i.report.last_confirmed_at : acc), null),
@@ -62,6 +62,7 @@ export const NearbyReportsSheet = forwardRef<BottomSheet, Props>(function Nearby
           report={item.report}
           distanceM={item.distanceM}
           selected={item.report.id === selectedId}
+          pending={item.pending}
           onPress={() => onSelect(item.report.id)}
         />
       </View>
