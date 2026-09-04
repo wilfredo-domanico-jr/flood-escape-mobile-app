@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "db:types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts",
     "db:push": "supabase db push",
-    "db:reset": "supabase db reset"
+    "db:reset": "supabase db reset",
+    "test:db": "supabase test db"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

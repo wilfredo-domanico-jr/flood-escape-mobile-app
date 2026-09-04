@@ -1,6 +1,8 @@
 import { Redirect } from "expo-router";
 
-// Onboarding gate lands here in Phase 2; for now go straight to the tabs.
+import { useAuthStore } from "@/features/auth/authStore";
+
 export default function Index() {
-  return <Redirect href="/(tabs)" />;
+  const onboardingDone = useAuthStore((s) => s.onboardingDone);
+  return <Redirect href={onboardingDone ? "/(tabs)" : "/onboarding"} />;
 }

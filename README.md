@@ -15,8 +15,9 @@ Work in progress, built in phases. See [Roadmap](#roadmap).
 | Phase | Scope | State |
 |---|---|---|
 | 1 | Foundation: Expo SDK 57, NativeWind, Supabase client, React Query, offline persistence, jest | Done |
-| 2 | Anonymous auth with optional email upgrade | Next |
-| 3–12 | Map, reporting, verification + confidence, realtime, offline sync, route safety, evacuation centers, push notifications, testing and polish | Planned |
+| 2 | Anonymous auth with optional email upgrade, profiles table + RLS, onboarding | Done |
+| 3 | Map and location | Next |
+| 4–12 | Reporting, verification + confidence, realtime, offline sync, route safety, evacuation centers, push notifications, testing and polish | Planned |
 
 ## Tech stack
 
@@ -100,6 +101,7 @@ Prerequisites: Node 20+, npm, Expo Go on your phone, a Supabase project (free ti
 | `npm run lint` | ESLint via `expo lint` |
 | `npm run db:push` | Apply `supabase/migrations` to the linked project |
 | `npm run db:reset` | Reset the local Supabase stack (requires Docker) |
+| `npm run test:db` | Run pgTAP tests in `supabase/tests` against the local stack (requires Docker) |
 | `npm run db:types` | Regenerate `src/lib/supabase/database.types.ts` from the local stack |
 
 ## Project structure
