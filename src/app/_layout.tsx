@@ -24,6 +24,8 @@ function RootStack() {
       <Stack.Protected guard={onboardingDone}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="settings" />
+        <Stack.Screen name="report/new" options={{ presentation: "fullScreenModal" }} />
+        <Stack.Screen name="report/[id]" />
       </Stack.Protected>
     </Stack>
   );

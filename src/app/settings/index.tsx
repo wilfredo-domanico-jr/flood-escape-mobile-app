@@ -6,6 +6,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { colors } from "@/constants/theme";
 import { selectIsAnonymous, selectUser, useAuthStore } from "@/features/auth/authStore";
+import { SupabaseStatus } from "@/features/health/SupabaseStatus";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
@@ -52,6 +53,7 @@ export default function SettingsScreen() {
       </Link>
       <Row icon="notifications" title="Notifications" subtitle="Coming soon" disabled />
       <Row icon="shield-checkmark" title="Privacy" subtitle="Coming soon" disabled />
+      <SupabaseStatus />
       <Text className="mt-4 text-center text-xs text-ink-muted">Flood Escape {version}</Text>
     </ScrollView>
   );

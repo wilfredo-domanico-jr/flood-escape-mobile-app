@@ -1,8 +1,13 @@
 /**
- * Database types. Hand-maintained to match `supabase/migrations` until the local stack is
- * available, then regenerate with `npm run db:types` (requires Docker + `npx supabase start`).
+ * Database types. Hand-maintained to match `supabase/migrations`; regenerate with `npm run db:types`
+ * (requires Docker + `npx supabase start`) and diff against this file.
  */
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+
+type FloodSeverity = "passable" | "caution" | "dangerous" | "impassable";
+type ReportStatus = "active" | "stale" | "resolved" | "disputed";
+type VerificationKind = "confirm" | "clear";
+type ConfidenceLevel = "low" | "medium" | "high";
 
 type ProfileRow = {
   id: string;
@@ -11,6 +16,71 @@ type ProfileRow = {
   reports_confirmed: number;
   reports_disputed: number;
   created_at: string;
+  updated_at: string;
+};
+
+type FloodReportRow = {
+  id: string;
+  client_id: string;
+  severity: FloodSeverity;
+  status: ReportStatus;
+  location: unknown;
+  location_accuracy_m: number | null;
+  geo_cell: string;
+  description: string | null;
+  has_photo: boolean;
+  confirm_count: number;
+  clear_count: number;
+  nearby_report_count: number;
+  confidence_score: number;
+  confidence_level: ConfidenceLevel;
+  confidence_reasons: string[];
+  created_at: string;
+  last_confirmed_at: string;
+  expires_at: string;
+  resolved_at: string | null;
+  updated_at: string;
+};
+
+type ReportAuthorRow = {
+  report_id: string;
+  user_id: string;
+  reputation_snapshot: number;
+  created_at: string;
+};
+
+type ReportMediaRow = {
+  id: string;
+  report_id: string;
+  storage_path: string;
+  width: number | null;
+  height: number | null;
+  bytes: number | null;
+  created_at: string;
+};
+
+type PublicFloodReportRow = {
+  id: string;
+  severity: FloodSeverity;
+  effective_status: ReportStatus;
+  stored_status: ReportStatus;
+  lat: number;
+  lng: number;
+  location_accuracy_m: number | null;
+  geo_cell: string;
+  description: string | null;
+  has_photo: boolean;
+  photo_path: string | null;
+  confirm_count: number;
+  clear_count: number;
+  nearby_report_count: number;
+  confidence_score: number;
+  confidence_level: ConfidenceLevel;
+  confidence_reasons: string[];
+  created_at: string;
+  last_confirmed_at: string;
+  expires_at: string;
+  resolved_at: string | null;
   updated_at: string;
 };
 
@@ -23,19 +93,61 @@ export type Database = {
         Update: Partial<ProfileRow>;
         Relationships: [];
       };
+      flood_reports: {
+        Row: FloodReportRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      report_authors: {
+        Row: ReportAuthorRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      report_media: {
+        Row: ReportMediaRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
     };
-    Views: Record<string, never>;
+    Views: {
+      public_flood_reports: {
+        Row: PublicFloodReportRow;
+        Relationships: [];
+      };
+      my_reports: {
+        Row: PublicFloodReportRow & { reporter_id: string };
+        Relationships: [];
+      };
+    };
     Functions: {
       get_my_profile: {
         Args: Record<string, never>;
         Returns: ProfileRow;
       };
+      reports_in_bbox: {
+        Args: {
+          p_min_lat: number;
+          p_min_lng: number;
+          p_max_lat: number;
+          p_max_lng: number;
+          p_include_stale?: boolean;
+          p_limit?: number;
+        };
+        Returns: PublicFloodReportRow[];
+      };
+      reports_near: {
+        Args: { p_lat: number; p_lng: number; p_radius_m?: number; p_limit?: number };
+        Returns: (PublicFloodReportRow & { distance_m: number })[];
+      };
     };
     Enums: {
-      flood_severity: "passable" | "caution" | "dangerous" | "impassable";
-      report_status: "active" | "stale" | "resolved" | "disputed";
-      verification_kind: "confirm" | "clear";
-      confidence_level: "low" | "medium" | "high";
+      flood_severity: FloodSeverity;
+      report_status: ReportStatus;
+      verification_kind: VerificationKind;
+      confidence_level: ConfidenceLevel;
     };
     CompositeTypes: Record<string, never>;
   };
@@ -43,6 +155,9 @@ export type Database = {
 
 export type Tables<T extends keyof Database["public"]["Tables"]> =
   Database["public"]["Tables"][T]["Row"];
+export type Views<T extends keyof Database["public"]["Views"]> = Database["public"]["Views"][T]["Row"];
 export type Enums<T extends keyof Database["public"]["Enums"]> = Database["public"]["Enums"][T];
 
 export type Profile = Tables<"profiles">;
+export type PublicReport = Views<"public_flood_reports">;
+export type NearbyReport = PublicReport & { distance_m: number };

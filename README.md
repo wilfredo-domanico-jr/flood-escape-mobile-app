@@ -16,8 +16,9 @@ Work in progress, built in phases. See [Roadmap](#roadmap).
 |---|---|---|
 | 1 | Foundation: Expo SDK 57, NativeWind, Supabase client, React Query, offline persistence, jest | Done |
 | 2 | Anonymous auth with optional email upgrade, profiles table + RLS, onboarding | Done |
-| 3 | Map and location | Next |
-| 4–12 | Reporting, verification + confidence, realtime, offline sync, route safety, evacuation centers, push notifications, testing and polish | Planned |
+| 3 | Map with viewport-scoped reports, location handling, PostGIS read RPCs | Done |
+| 4 | Flood reporting through an offline outbox | Next |
+| 5–12 | Report details, verification + confidence, realtime, offline sync, route safety, evacuation centers, push notifications, testing and polish | Planned |
 
 ## Tech stack
 

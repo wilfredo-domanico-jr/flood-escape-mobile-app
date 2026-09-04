@@ -8,7 +8,11 @@
     "scheme": "floodescape",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Take a photo of the flooding to attach to your report.",
+        "NSPhotoLibraryUsageDescription": "Attach an existing photo of the flooding to your report."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -41,7 +45,13 @@
       "expo-image",
       "expo-status-bar",
       "expo-web-browser",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Flood Escape uses your location while the app is open to show flood reports near you and to place your own reports."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
