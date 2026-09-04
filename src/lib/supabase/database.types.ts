@@ -83,6 +83,23 @@ type SavedRouteRow = {
   updated_at: string;
 };
 
+type EvacuationCenterRow = {
+  id: string;
+  kind: "evacuation" | "hospital" | "fire" | "police";
+  name: string;
+  address: string | null;
+  city: string | null;
+  barangay: string | null;
+  location: unknown;
+  capacity: number | null;
+  contact: string | null;
+  is_active: boolean;
+  source: string;
+  source_updated_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type PublicFloodReportRow = {
   id: string;
   severity: FloodSeverity;
@@ -137,6 +154,12 @@ export type Database = {
       };
       report_verifications: {
         Row: ReportVerificationRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      evacuation_centers: {
+        Row: EvacuationCenterRow;
         Insert: never;
         Update: never;
         Relationships: [];
@@ -232,6 +255,24 @@ export type Database = {
       delete_my_data: {
         Args: Record<string, never>;
         Returns: undefined;
+      };
+      evacuation_centers_near: {
+        Args: { p_lat: number; p_lng: number; p_kinds?: string[]; p_limit?: number };
+        Returns: {
+          id: string;
+          kind: "evacuation" | "hospital" | "fire" | "police";
+          name: string;
+          address: string | null;
+          city: string | null;
+          barangay: string | null;
+          lat: number;
+          lng: number;
+          capacity: number | null;
+          contact: string | null;
+          source: string;
+          source_updated_at: string | null;
+          distance_m: number;
+        }[];
       };
       reports_along_route: {
         Args: { p_route_geojson: string; p_buffer_m?: number };

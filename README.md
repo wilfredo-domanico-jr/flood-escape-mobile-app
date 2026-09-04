@@ -23,8 +23,9 @@ Work in progress, built in phases. See [Roadmap](#roadmap).
 | 7 | Realtime updates scoped to viewport grid cells, focus/app-state lifecycle, cache patching | Done |
 | 8 | Offline banner, client-side staleness for cached rows, Activity with retry/discard, Wi-Fi-only photos, location blur, delete my data | Done |
 | 9 | Route safety: openrouteservice behind an Edge Function, buffered PostGIS route query, explainable risk levels, saved routes | Done |
-| 10 | Evacuation centers | Next |
-| 11–12 | Push notifications, testing and polish | Planned |
+| 10 | Evacuation centers, hospitals, fire and police with KNN nearest query, filters, directions deep links | Done |
+| 11 | Push notifications (EAS development build) | Next |
+| 12 | Testing, performance, polish | Planned |
 
 ## Tech stack
 
@@ -97,6 +98,10 @@ Prerequisites: Node 20+, npm, Expo Go on your phone, a Supabase project (free ti
    ```
 
    Scan the QR code with Expo Go. Push notifications (Phase 11) will require an EAS development build; everything before that runs in Expo Go.
+
+## Testing what exists
+
+See [docs/manual-testing.md](docs/manual-testing.md) for a phone walkthrough of every phase, and run `npm test` plus `npm run test:db` for the automated suites (unit, SQL/RLS, and the SQL-vs-TypeScript confidence fixture).
 
 ## Scripts
 
