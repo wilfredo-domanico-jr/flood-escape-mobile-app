@@ -186,6 +186,10 @@ export type Database = {
         };
         Returns: { score: number; level: ConfidenceLevel; reasons: string[] }[];
       };
+      report_detail: {
+        Args: { p_report_id: string };
+        Returns: Json;
+      };
       reports_near: {
         Args: { p_lat: number; p_lng: number; p_radius_m?: number; p_limit?: number };
         Returns: (PublicFloodReportRow & { distance_m: number })[];

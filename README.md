@@ -18,8 +18,9 @@ Work in progress, built in phases. See [Roadmap](#roadmap).
 | 2 | Anonymous auth with optional email upgrade, profiles table + RLS, onboarding | Done |
 | 3 | Map with viewport-scoped reports, location handling, PostGIS read RPCs | Done |
 | 4 | Fast reporting flow, SQLite outbox with idempotent retries, photo compression, storage policies, write RPCs with rate limits | Done |
-| 5 | Report details | Next |
-| 6–12 | Verification + confidence, realtime, offline sync, route safety, evacuation centers, push notifications, testing and polish | Planned |
+| 5 | Report details with confidence explanation, activity, author close action | Done |
+| 6 | Verification + confidence model + lifecycle | Next |
+| 7–12 | Realtime, offline sync, route safety, evacuation centers, push notifications, testing and polish | Planned |
 
 ## Tech stack
 
