@@ -14,7 +14,6 @@ export async function ensureAndroidChannel(): Promise<void> {
     name: "Route alerts",
     description: "Flood reports on or near routes you saved.",
     importance: Notifications.AndroidImportance.HIGH,
-    sound: "default",
     vibrationPattern: [0, 250, 250, 250],
     lightColor: "#0E7490",
   });
@@ -62,7 +61,7 @@ export async function sendLocalPreview(): Promise<void> {
     content: {
       title: "Flooding reported near your route",
       body: 'Dangerous flooding was just reported on or near "Home to work". Tap to see the report.',
-      sound: "default",
+      sound: true,
       data: { preview: true },
     },
     trigger: null,
