@@ -6,6 +6,7 @@ import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, Vie
 import MapView, { Circle, Marker, type Region } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ExpoGoBaseTiles, ExpoGoTileAttribution } from "@/components/map/ExpoGoBaseMap";
 import { Button } from "@/components/ui/Button";
 import { LocationPermissionCard } from "@/components/ui/PermissionGate";
 import { TextField } from "@/components/ui/TextField";
@@ -135,6 +136,7 @@ export function NewReportScreen() {
                 }}
                 accessibilityLabel="Map for placing the flood pin"
               >
+                <ExpoGoBaseTiles />
                 {fix && accuracy != null && accuracy > 20 && !pinMoved ? (
                   <Circle
                     center={{ latitude: fix.lat, longitude: fix.lng }}
@@ -155,6 +157,7 @@ export function NewReportScreen() {
                   />
                 ) : null}
               </MapView>
+              <ExpoGoTileAttribution />
             </View>
             {permission !== "granted" ? (
               <LocationPermissionCard

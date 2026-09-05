@@ -5,6 +5,7 @@ import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ExpoGoBaseTiles, ExpoGoTileAttribution, USE_OSM_FALLBACK_TILES } from "@/components/map/ExpoGoBaseMap";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SEVERITY_META } from "@/constants/severity";
@@ -97,11 +98,13 @@ export function ReportDetailsScreen({ id }: { id: string }) {
             rotateEnabled={false}
             pitchEnabled={false}
             toolbarEnabled={false}
-            liteMode
+            liteMode={!USE_OSM_FALLBACK_TILES}
             accessibilityLabel="Map showing the report location"
           >
+            <ExpoGoBaseTiles />
             <Marker coordinate={{ latitude: report.lat, longitude: report.lng }} pinColor={meta.color} />
           </MapView>
+          <ExpoGoTileAttribution />
         </View>
 
         <View className="gap-2">

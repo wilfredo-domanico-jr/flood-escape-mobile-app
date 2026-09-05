@@ -8,6 +8,10 @@ make the verification and realtime steps meaningful.
 Before you start: `.env` filled in, `npm run db:push` reports "up to date", anonymous sign-ins
 enabled in the Supabase dashboard, `npx expo start` running, Expo Go open on the phone.
 
+Expo Go on Android cannot load Google Maps tiles with current react-native-maps builds
+(react-native-maps issue #5888), so in Expo Go the app draws OpenStreetMap tiles instead and shows a
+small "dev tiles" attribution. Real builds use Google Maps on Android and Apple Maps on iOS.
+
 ## Phase 3: map and location
 
 | Step | Expect |

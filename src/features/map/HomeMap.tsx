@@ -6,6 +6,7 @@ import { Pressable, Text, View } from "react-native";
 import MapView, { Circle, type Region } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ExpoGoBaseTiles, ExpoGoTileAttribution } from "@/components/map/ExpoGoBaseMap";
 import { LocationPermissionCard } from "@/components/ui/PermissionGate";
 import { colors } from "@/constants/theme";
 import {
@@ -137,6 +138,7 @@ export function HomeMap() {
         onPress={() => setSelectedId(null)}
         accessibilityLabel="Map of nearby flood reports"
       >
+        <ExpoGoBaseTiles />
         {fix && fix.accuracyM != null && fix.accuracyM > POOR_ACCURACY_M ? (
           <Circle
             center={{ latitude: fix.lat, longitude: fix.lng }}
@@ -152,6 +154,7 @@ export function HomeMap() {
           <ReportMarker key={r.id} report={r} selected={false} onPress={() => {}} pending />
         ))}
       </MapView>
+      <ExpoGoTileAttribution bottom="18%" />
 
       {/* Top overlays */}
       <View pointerEvents="box-none" className="absolute left-0 right-0 px-4" style={{ top: insets.top + 8 }}>

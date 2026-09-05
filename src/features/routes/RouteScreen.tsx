@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Alert, Pressable, Switch, Text, View } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 
+import { ExpoGoBaseTiles, ExpoGoTileAttribution } from "@/components/map/ExpoGoBaseMap";
 import { Button } from "@/components/ui/Button";
 import { LocationPermissionCard } from "@/components/ui/PermissionGate";
 import { Screen } from "@/components/ui/Screen";
@@ -184,6 +185,7 @@ export function RouteScreen() {
               toolbarEnabled={false}
               accessibilityLabel="Map of the route and nearby flood reports"
             >
+              <ExpoGoBaseTiles />
               <Polyline coordinates={coords} strokeColor={riskColor} strokeWidth={5} />
               {coords.length > 0 ? <Marker coordinate={coords[0]} pinColor={colors.brand} title="Start" /> : null}
               {coords.length > 1 ? <Marker coordinate={coords[coords.length - 1]} pinColor={colors.ink} title={shown.destination} /> : null}
@@ -194,6 +196,7 @@ export function RouteScreen() {
                 ) : null;
               })}
             </MapView>
+            <ExpoGoTileAttribution />
           </View>
           {!viewSaved ? (
             <Button title="Save this route for alerts" variant="secondary" onPress={promptSave} loading={save.isPending} />

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 
+import { ExpoGoBaseTiles, ExpoGoTileAttribution } from "@/components/map/ExpoGoBaseMap";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LocationPermissionCard } from "@/components/ui/PermissionGate";
@@ -132,10 +133,12 @@ export function CentersScreen() {
             toolbarEnabled={false}
             accessibilityLabel="Map of nearby facilities"
           >
+            <ExpoGoBaseTiles />
             {shown.map((c) => (
               <Marker key={c.id} coordinate={{ latitude: c.lat, longitude: c.lng }} title={c.name} pinColor={KIND_META[c.kind].color} />
             ))}
           </MapView>
+          <ExpoGoTileAttribution />
         </View>
       ) : null}
 
