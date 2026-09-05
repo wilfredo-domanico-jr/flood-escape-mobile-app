@@ -36,5 +36,11 @@ export const DEFAULT_REGION = {
   longitudeDelta: 0.12,
 };
 
+/** Map zoom levels (web-Mercator). */
+export const DEFAULT_ZOOM = 11.2;
 /** Zoom used when centering on the user. */
-export const USER_ZOOM_DELTA = 0.02;
+export const USER_ZOOM = 14;
+/** Zoom for placing a report pin. */
+export const PIN_ZOOM = 16;
+/** Zoom for the small preview on report details. */
+export const DETAIL_ZOOM = 15.5;

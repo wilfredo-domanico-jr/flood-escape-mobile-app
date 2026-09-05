@@ -1,16 +1,18 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { Camera, GeoJSONSource, Layer } from "@maplibre/maplibre-react-native";
 import { Alert, Pressable, Switch, Text, View } from "react-native";
-import MapView, { Marker, Polyline } from "react-native-maps";
 
-import { ExpoGoBaseTiles, ExpoGoTileAttribution } from "@/components/map/ExpoGoBaseMap";
+import { AppMap } from "@/components/map/AppMap";
+import { PinMarker } from "@/components/map/PinMarker";
 import { Button } from "@/components/ui/Button";
 import { LocationPermissionCard } from "@/components/ui/PermissionGate";
 import { Screen } from "@/components/ui/Screen";
 import { TextField } from "@/components/ui/TextField";
 import { SEVERITY_META } from "@/constants/severity";
 import { colors } from "@/constants/theme";
+import { boundsForPoints } from "@/lib/geo/mapCamera";
 import { ReportCard } from "@/features/reports/ReportCard";
 import { useLocation } from "@/hooks/useLocation";
 import { useAppStore } from "@/store/useAppStore";
@@ -127,7 +129,8 @@ export function RouteScreen() {
       ? { geometry: result.route.geometry, hits: result.hits, risk, fetchedAt: result.fetched_at, stale: isStale, distanceM: result.route.distance_m, durationS: result.route.duration_s, destination: result.route.destination.label }
       : null;
 
-  const coords = shown?.geometry.coordinates.map(([lng, lat]) => ({ latitude: lat, longitude: lng })) ?? [];
+  const points = shown?.geometry.coordinates.map(([lng, lat]) => ({ lat, lng })) ?? [];
+  const bounds = boundsForPoints(points) ?? [120.9, 14.5, 121.1, 14.7];
   const riskColor = shown ? (shown.risk.level === "high" ? colors.severity.impassable : shown.risk.level === "caution" ? colors.severity.caution : colors.confidence.high) : colors.brand;
 
   return (
@@ -177,26 +180,29 @@ export function RouteScreen() {
           ) : null}
           <RouteRiskCard risk={shown.risk} fetchedAt={shown.fetchedAt} stale={shown.stale} distanceM={shown.distanceM} durationS={shown.durationS} />
           <View className="overflow-hidden rounded-card" style={{ height: 240 }}>
-            <MapView
-              style={{ flex: 1 }}
-              initialRegion={regionFor(coords)}
-              region={regionFor(coords)}
-              scrollEnabled={false}
-              toolbarEnabled={false}
-              accessibilityLabel="Map of the route and nearby flood reports"
-            >
-              <ExpoGoBaseTiles />
-              <Polyline coordinates={coords} strokeColor={riskColor} strokeWidth={5} />
-              {coords.length > 0 ? <Marker coordinate={coords[0]} pinColor={colors.brand} title="Start" /> : null}
-              {coords.length > 1 ? <Marker coordinate={coords[coords.length - 1]} pinColor={colors.ink} title={shown.destination} /> : null}
+            <AppMap style={{ flex: 1 }} interactive={false} accessibilityLabel="Map of the route and nearby flood reports">
+              <Camera bounds={bounds} padding={{ top: 24, right: 24, bottom: 24, left: 24 }} />
+              {shown.geometry.coordinates.length > 1 ? (
+                <GeoJSONSource id="route" data={{ type: "Feature", properties: {}, geometry: shown.geometry }}>
+                  <Layer
+                    id="route-line"
+                    type="line"
+                    paint={{ "line-color": riskColor, "line-width": 5 }}
+                    layout={{ "line-cap": "round", "line-join": "round" }}
+                  />
+                </GeoJSONSource>
+              ) : null}
+              {points.length > 0 ? <PinMarker at={points[0]} color={colors.brand} accessibilityLabel="Start" /> : null}
+              {points.length > 1 ? (
+                <PinMarker at={points[points.length - 1]} color={colors.ink} accessibilityLabel={shown.destination} />
+              ) : null}
               {[...shown.risk.onRoute, ...shown.risk.near].map((h) => {
                 const full = shown.hits.find((x) => x.id === h.id);
                 return full ? (
-                  <Marker key={h.id} coordinate={{ latitude: full.lat, longitude: full.lng }} pinColor={SEVERITY_META[full.severity].color} />
+                  <PinMarker key={h.id} at={{ lat: full.lat, lng: full.lng }} color={SEVERITY_META[full.severity].color} size={28} />
                 ) : null;
               })}
-            </MapView>
-            <ExpoGoTileAttribution />
+            </AppMap>
           </View>
           {!viewSaved ? (
             <Button title="Save this route for alerts" variant="secondary" onPress={promptSave} loading={save.isPending} />
@@ -228,21 +234,4 @@ export function RouteScreen() {
       </View>
     </Screen>
   );
-}
-
-function regionFor(coords: { latitude: number; longitude: number }[]) {
-  if (coords.length === 0) return { latitude: 14.5995, longitude: 120.9842, latitudeDelta: 0.1, longitudeDelta: 0.1 };
-  let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
-  for (const c of coords) {
-    minLat = Math.min(minLat, c.latitude);
-    maxLat = Math.max(maxLat, c.latitude);
-    minLng = Math.min(minLng, c.longitude);
-    maxLng = Math.max(maxLng, c.longitude);
-  }
-  return {
-    latitude: (minLat + maxLat) / 2,
-    longitude: (minLng + maxLng) / 2,
-    latitudeDelta: Math.max(0.01, (maxLat - minLat) * 1.4),
-    longitudeDelta: Math.max(0.01, (maxLng - minLng) * 1.4),
-  };
 }

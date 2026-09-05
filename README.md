@@ -36,7 +36,7 @@ Work in progress, built in phases. See [Roadmap](#roadmap).
 | Local state | zustand (viewport, connectivity, sync status) |
 | Local DB | expo-sqlite (auth session storage, query cache, offline outbox) |
 | Backend | Supabase: Postgres + PostGIS, Auth (anonymous first), Storage, Realtime, Edge Functions, RLS |
-| Maps | react-native-maps (Apple Maps on iOS, Google Maps on Android) |
+| Maps | MapLibre React Native with OpenFreeMap vector tiles (OpenStreetMap data, no API key) |
 | Routing | openrouteservice behind a Supabase Edge Function (provider is swappable) |
 | Tests | jest-expo, React Native Testing Library, pgTAP, Maestro |
 
@@ -71,7 +71,7 @@ Business logic lives in two places only: Postgres functions (authoritative) and 
 
 ## Getting started
 
-Prerequisites: Node 20+, npm, Expo Go on your phone, a Supabase project (free tier is fine).
+Prerequisites: Node 20+, npm, Android Studio (SDK + JDK 17 or newer) or Xcode, a phone with USB debugging, a Supabase project (free tier is fine). The map library is native code, so the app runs as a development build rather than in Expo Go.
 
 1. Install dependencies
 
@@ -94,10 +94,11 @@ Prerequisites: Node 20+, npm, Expo Go on your phone, a Supabase project (free ti
 3. Run the app
 
    ```bash
-   npx expo start
+   npx expo run:android   # first time, or after adding native modules: builds and installs on the USB phone
+   npx expo start          # afterwards: Metro only, open the installed Flood Escape app
    ```
 
-   Scan the QR code with Expo Go. Push notifications (Phase 11) will require an EAS development build; everything before that runs in Expo Go.
+   On Windows point `JAVA_HOME` at a JDK 17+ (Android Studio ships one under `jbr`) and `ANDROID_HOME` at the SDK before the first build.
 
 ## Testing what exists
 

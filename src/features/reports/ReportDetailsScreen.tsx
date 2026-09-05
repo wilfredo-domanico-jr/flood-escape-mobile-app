@@ -2,14 +2,16 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import { Camera } from "@maplibre/maplibre-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ExpoGoBaseTiles, ExpoGoTileAttribution, USE_OSM_FALLBACK_TILES } from "@/components/map/ExpoGoBaseMap";
+import { AppMap } from "@/components/map/AppMap";
+import { PinMarker } from "@/components/map/PinMarker";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SEVERITY_META } from "@/constants/severity";
 import { colors } from "@/constants/theme";
+import { DETAIL_ZOOM } from "@/constants/thresholds";
 import { useLocation } from "@/hooks/useLocation";
 import { formatDistance, haversineDistanceM } from "@/lib/geo/distance";
 import { formatAge, formatUntil } from "@/lib/format/relativeTime";
@@ -90,21 +92,10 @@ export function ReportDetailsScreen({ id }: { id: string }) {
       {header}
       <ScrollView contentContainerClassName="gap-4 px-4 pb-10">
         <View className="overflow-hidden rounded-card" style={{ height: 160 }}>
-          <MapView
-            style={{ flex: 1 }}
-            initialRegion={{ latitude: report.lat, longitude: report.lng, latitudeDelta: 0.006, longitudeDelta: 0.006 }}
-            scrollEnabled={false}
-            zoomEnabled={false}
-            rotateEnabled={false}
-            pitchEnabled={false}
-            toolbarEnabled={false}
-            liteMode={!USE_OSM_FALLBACK_TILES}
-            accessibilityLabel="Map showing the report location"
-          >
-            <ExpoGoBaseTiles />
-            <Marker coordinate={{ latitude: report.lat, longitude: report.lng }} pinColor={meta.color} />
-          </MapView>
-          <ExpoGoTileAttribution />
+          <AppMap style={{ flex: 1 }} interactive={false} accessibilityLabel="Map showing the report location">
+            <Camera initialViewState={{ center: [report.lng, report.lat], zoom: DETAIL_ZOOM }} />
+            <PinMarker at={{ lat: report.lat, lng: report.lng }} color={meta.color} />
+          </AppMap>
         </View>
 
         <View className="gap-2">

@@ -2,17 +2,19 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Camera, type CameraRef, UserLocation } from "@maplibre/maplibre-react-native";
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
-import MapView, { Circle, Marker, type Region } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ExpoGoBaseTiles, ExpoGoTileAttribution } from "@/components/map/ExpoGoBaseMap";
+import { AccuracyCircle } from "@/components/map/AccuracyCircle";
+import { AppMap } from "@/components/map/AppMap";
+import { DraggablePinMarker } from "@/components/map/PinMarker";
 import { Button } from "@/components/ui/Button";
 import { LocationPermissionCard } from "@/components/ui/PermissionGate";
 import { TextField } from "@/components/ui/TextField";
 import type { Severity } from "@/constants/severity";
 import { colors } from "@/constants/theme";
-import { DEFAULT_REGION, POOR_ACCURACY_M } from "@/constants/thresholds";
+import { DEFAULT_REGION, DEFAULT_ZOOM, PIN_ZOOM, POOR_ACCURACY_M } from "@/constants/thresholds";
 import { fetchReportsNear } from "@/features/map/api";
 import { useLocation } from "@/hooks/useLocation";
 import { formatAge } from "@/lib/format/relativeTime";
@@ -25,13 +27,12 @@ import { SEVERITY_META } from "@/constants/severity";
 import { SeverityPicker } from "./SeverityPicker";
 import { useSubmitReport } from "./useSubmitReport";
 
-const PIN_ZOOM = 0.004;
 const DUPLICATE_RADIUS_M = 50;
 
 export function NewReportScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const mapRef = useRef<MapView>(null);
+  const cameraRef = useRef<CameraRef>(null);
   const isOnline = useAppStore((s) => s.isOnline);
   const { permission, fix, request, busy: locating } = useLocation();
   const { submit, submitting, error: submitError } = useSubmitReport();
@@ -49,10 +50,7 @@ export function NewReportScreen() {
   // Keep the map on the GPS fix until the user takes over.
   useEffect(() => {
     if (!fix || pinMoved) return;
-    mapRef.current?.animateToRegion(
-      { latitude: fix.lat, longitude: fix.lng, latitudeDelta: PIN_ZOOM, longitudeDelta: PIN_ZOOM },
-      300,
-    );
+    cameraRef.current?.easeTo({ center: [fix.lng, fix.lat], zoom: PIN_ZOOM, duration: 300 });
   }, [fix, pinMoved]);
 
   // Someone may have reported this exact spot already; offer to confirm instead.
@@ -120,44 +118,35 @@ export function NewReportScreen() {
           <View className="gap-2">
             <Text className="text-sm font-semibold text-ink-secondary">Where is the water?</Text>
             <View className="overflow-hidden rounded-card" style={{ height: 220 }}>
-              <MapView
-                ref={mapRef}
+              <AppMap
                 style={{ flex: 1 }}
-                initialRegion={
-                  fix
-                    ? { latitude: fix.lat, longitude: fix.lng, latitudeDelta: PIN_ZOOM, longitudeDelta: PIN_ZOOM }
-                    : (DEFAULT_REGION as Region)
-                }
-                showsUserLocation={permission === "granted"}
-                showsMyLocationButton={false}
-                toolbarEnabled={false}
                 onPress={(e) => {
-                  setManualPin({ lat: e.nativeEvent.coordinate.latitude, lng: e.nativeEvent.coordinate.longitude });
+                  const [lng, lat] = e.nativeEvent.lngLat;
+                  setManualPin({ lat, lng });
                 }}
                 accessibilityLabel="Map for placing the flood pin"
               >
-                <ExpoGoBaseTiles />
+                <Camera
+                  ref={cameraRef}
+                  initialViewState={
+                    fix
+                      ? { center: [fix.lng, fix.lat], zoom: PIN_ZOOM }
+                      : { center: [DEFAULT_REGION.longitude, DEFAULT_REGION.latitude], zoom: DEFAULT_ZOOM }
+                  }
+                />
+                {permission === "granted" ? <UserLocation /> : null}
                 {fix && accuracy != null && accuracy > 20 && !pinMoved ? (
-                  <Circle
-                    center={{ latitude: fix.lat, longitude: fix.lng }}
-                    radius={accuracy}
-                    strokeColor="rgba(14,116,144,0.4)"
-                    fillColor="rgba(14,116,144,0.12)"
-                  />
+                  <AccuracyCircle center={{ lat: fix.lat, lng: fix.lng }} radiusM={accuracy} />
                 ) : null}
                 {pin ? (
-                  <Marker
-                    coordinate={{ latitude: pin.lat, longitude: pin.lng }}
-                    draggable
-                    pinColor={severity ? SEVERITY_META[severity].color : colors.brand}
-                    onDragEnd={(e) => {
-                      setManualPin({ lat: e.nativeEvent.coordinate.latitude, lng: e.nativeEvent.coordinate.longitude });
-                    }}
+                  <DraggablePinMarker
+                    at={pin}
+                    color={severity ? SEVERITY_META[severity].color : colors.brand}
+                    onDragEnd={setManualPin}
                     accessibilityLabel="Flood location pin. Drag to adjust."
                   />
                 ) : null}
-              </MapView>
-              <ExpoGoTileAttribution />
+              </AppMap>
             </View>
             {permission !== "granted" ? (
               <LocationPermissionCard

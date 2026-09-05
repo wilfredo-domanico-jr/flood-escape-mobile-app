@@ -2,16 +2,18 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "@tanstack/react-query";
 import type { ComponentProps } from "react";
 import { useState } from "react";
+import { Camera, UserLocation } from "@maplibre/maplibre-react-native";
 import { Linking, Pressable, Text, View } from "react-native";
-import MapView, { Marker } from "react-native-maps";
 
-import { ExpoGoBaseTiles, ExpoGoTileAttribution } from "@/components/map/ExpoGoBaseMap";
+import { AppMap } from "@/components/map/AppMap";
+import { PinMarker } from "@/components/map/PinMarker";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LocationPermissionCard } from "@/components/ui/PermissionGate";
 import { Screen } from "@/components/ui/Screen";
 import { colors } from "@/constants/theme";
 import { DEFAULT_REGION } from "@/constants/thresholds";
+import { boundsForPoints } from "@/lib/geo/mapCamera";
 import { useLocation } from "@/hooks/useLocation";
 import { formatDistance } from "@/lib/geo/distance";
 import { formatAge } from "@/lib/format/relativeTime";
@@ -126,19 +128,18 @@ export function CentersScreen() {
 
       {shown.length > 0 ? (
         <View className="mt-4 overflow-hidden rounded-card" style={{ height: 200 }}>
-          <MapView
-            style={{ flex: 1 }}
-            initialRegion={{ latitude: origin.lat, longitude: origin.lng, latitudeDelta: 0.06, longitudeDelta: 0.06 }}
-            showsUserLocation={permission === "granted"}
-            toolbarEnabled={false}
-            accessibilityLabel="Map of nearby facilities"
-          >
-            <ExpoGoBaseTiles />
+          <AppMap style={{ flex: 1 }} accessibilityLabel="Map of nearby facilities">
+            <Camera
+              initialViewState={{
+                bounds: boundsForPoints([origin, ...shown.map((c) => ({ lat: c.lat, lng: c.lng }))])!,
+                padding: { top: 24, right: 24, bottom: 24, left: 24 },
+              }}
+            />
+            {permission === "granted" ? <UserLocation /> : null}
             {shown.map((c) => (
-              <Marker key={c.id} coordinate={{ latitude: c.lat, longitude: c.lng }} title={c.name} pinColor={KIND_META[c.kind].color} />
+              <PinMarker key={c.id} at={{ lat: c.lat, lng: c.lng }} color={KIND_META[c.kind].color} size={28} accessibilityLabel={c.name} />
             ))}
-          </MapView>
-          <ExpoGoTileAttribution />
+          </AppMap>
         </View>
       ) : null}
 

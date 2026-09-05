@@ -2,15 +2,12 @@
 
 Automated checks cover the pure logic and the database (`npm test`, `npm run test:db`). Everything
 involving a real phone must be checked by hand. This guide walks through Phases 3 to 10 in the
-order a demo would follow. Two phones (or one phone plus a second Expo Go session on an emulator)
+order a demo would follow. Two phones (or one phone plus an emulator running the development build)
 make the verification and realtime steps meaningful.
 
 Before you start: `.env` filled in, `npm run db:push` reports "up to date", anonymous sign-ins
-enabled in the Supabase dashboard, `npx expo start` running, Expo Go open on the phone.
-
-Expo Go on Android cannot load Google Maps tiles with current react-native-maps builds
-(react-native-maps issue #5888), so in Expo Go the app draws OpenStreetMap tiles instead and shows a
-small "dev tiles" attribution. Real builds use Google Maps on Android and Apple Maps on iOS.
+enabled in the Supabase dashboard, the development build installed (`npx expo run:android`), and
+`npx expo start` running. Expo Go cannot run this app: the map (MapLibre) is native code.
 
 ## Phase 3: map and location
 
@@ -102,4 +99,4 @@ account. Without it the screen shows "Route checks aren't set up on this server 
 - Sample facility coordinates are approximate. Replace them with LGU or NDRRMC open data before relying on them.
 - Push notifications (Phase 11) need an EAS development build and are not built yet.
 - Retention deletes rows but cannot delete Storage objects from SQL; an Edge Function will handle orphaned photos in Phase 11.
-- Android production builds need a Google Maps key in `app.json`; Expo Go does not.
+- Maps come from OpenFreeMap (OpenStreetMap data). No key is needed; attribution is shown on every map.

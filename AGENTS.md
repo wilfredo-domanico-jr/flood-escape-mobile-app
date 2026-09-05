@@ -11,4 +11,5 @@ Do not import from `@react-navigation/*`; use `expo-router` and `expo-router/rea
 - Style with NativeWind `className` props only; tokens are defined in `tailwind.config.js`.
 - All backend writes go through Supabase RPCs defined in `supabase/migrations`; never insert directly into report tables from the client.
 - Every flood-information UI must show age and confidence; never state that a road is "safe".
+- Maps use `@maplibre/maplibre-react-native` (v11 API: `Map`, `Camera`, `Marker`, `GeoJSONSource`, `Layer`) through `src/components/map/AppMap`. Tiles come from OpenFreeMap; there is no Google Maps key and Expo Go is not supported, run `npx expo run:android`.
 - Architecture and phase plan: see the approved plan (Phase 1 in progress).

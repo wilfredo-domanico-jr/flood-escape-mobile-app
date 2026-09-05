@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { Marker } from "@maplibre/maplibre-react-native";
 import { memo } from "react";
 import { View } from "react-native";
-import { Marker } from "react-native-maps";
 
 import { SEVERITY_META } from "@/constants/severity";
 import type { PublicReport } from "@/lib/supabase/database.types";
@@ -22,13 +22,11 @@ function ReportMarkerInner({ report, selected, onPress, pending }: Props) {
 
   return (
     <Marker
-      identifier={report.id}
-      coordinate={{ latitude: report.lat, longitude: report.lng }}
+      id={report.id}
+      lngLat={[report.lng, report.lat]}
+      anchor="center"
       onPress={() => onPress(report.id)}
-      anchor={{ x: 0.5, y: 0.5 }}
-      tracksViewChanges={false}
       accessibilityLabel={`${meta.label} flooding${pending ? ", sending" : stale ? ", may have receded" : ""}`}
-      zIndex={selected ? 10 : report.confidence_level === "high" ? 3 : 1}
     >
       <View
         style={{
@@ -55,7 +53,7 @@ function ReportMarkerInner({ report, selected, onPress, pending }: Props) {
   );
 }
 
-/** Re-render only when the row actually changed; react-native-maps markers are expensive. */
+/** Re-render only when the row actually changed; native markers are expensive. */
 export const ReportMarker = memo(
   ReportMarkerInner,
   (a, b) =>

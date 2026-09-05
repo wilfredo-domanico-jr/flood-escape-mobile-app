@@ -12,7 +12,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Take a photo of the flooding to attach to your report.",
         "NSPhotoLibraryUsageDescription": "Attach an existing photo of the flooding to your report."
-      }
+      },
+      "bundleIdentifier": "com.wilfredodomanico.floodescape"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +22,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.wilfredodomanico.floodescape"
     },
     "web": {
       "output": "static",
@@ -51,7 +53,8 @@
         {
           "locationWhenInUsePermission": "Flood Escape uses your location while the app is open to show flood reports near you and to place your own reports."
         }
-      ]
+      ],
+      "@maplibre/maplibre-react-native"
     ],
     "experiments": {
       "typedRoutes": true,

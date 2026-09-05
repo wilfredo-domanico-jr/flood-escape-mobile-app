@@ -1,24 +1,21 @@
 import type BottomSheet from "@gorhom/bottom-sheet";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { Camera, type CameraRef, UserLocation, type ViewStateChangeEvent } from "@maplibre/maplibre-react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, Text, View } from "react-native";
-import MapView, { Circle, type Region } from "react-native-maps";
+import { type NativeSyntheticEvent, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ExpoGoBaseTiles, ExpoGoTileAttribution } from "@/components/map/ExpoGoBaseMap";
+import { AccuracyCircle } from "@/components/map/AccuracyCircle";
+import { AppMap } from "@/components/map/AppMap";
 import { LocationPermissionCard } from "@/components/ui/PermissionGate";
 import { colors } from "@/constants/theme";
-import {
-  DEFAULT_REGION,
-  POOR_ACCURACY_M,
-  RECENTER_THRESHOLD_M,
-  USER_ZOOM_DELTA,
-} from "@/constants/thresholds";
+import { DEFAULT_REGION, DEFAULT_ZOOM, POOR_ACCURACY_M, RECENTER_THRESHOLD_M, USER_ZOOM } from "@/constants/thresholds";
 import { pendingToPublicReport, usePendingReports } from "@/features/offline/usePendingReports";
 import { useLocation } from "@/hooks/useLocation";
-import { type Bbox, bboxCenter, regionToBbox } from "@/lib/geo/bbox";
-import { haversineDistanceM } from "@/lib/geo/distance";
+import { type Bbox, regionToBbox } from "@/lib/geo/bbox";
+import { haversineDistanceM, type LatLng } from "@/lib/geo/distance";
+import { boundsToBbox } from "@/lib/geo/mapCamera";
 import { useAppStore } from "@/store/useAppStore";
 
 import { RoundButton, StatusChip } from "./MapControls";
@@ -27,16 +24,18 @@ import { ReportMarker } from "./ReportMarker";
 import { useReportsInViewport } from "./useReportsInViewport";
 import { useReportsRealtime } from "./useReportsRealtime";
 
+const DEFAULT_CENTER: LatLng = { lat: DEFAULT_REGION.latitude, lng: DEFAULT_REGION.longitude };
+
 export function HomeMap() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const mapRef = useRef<MapView>(null);
+  const cameraRef = useRef<CameraRef>(null);
   const sheetRef = useRef<BottomSheet>(null);
   const { permission, fix, request } = useLocation({ watch: true });
   const isOnline = useAppStore((s) => s.isOnline);
   const setViewport = useAppStore((s) => s.setViewport);
 
-  const [region, setRegion] = useState<Region>(DEFAULT_REGION);
+  const [center, setCenter] = useState<LatLng>(DEFAULT_CENTER);
   const [viewport, setLocalViewport] = useState<Bbox | null>(regionToBbox(DEFAULT_REGION));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [followUser, setFollowUser] = useState(true);
@@ -62,19 +61,17 @@ export function HomeMap() {
   useEffect(() => {
     if (!fix || centeredOnce.current) return;
     centeredOnce.current = true;
-    mapRef.current?.animateToRegion(
-      { latitude: fix.lat, longitude: fix.lng, latitudeDelta: USER_ZOOM_DELTA, longitudeDelta: USER_ZOOM_DELTA },
-      600,
-    );
+    cameraRef.current?.easeTo({ center: [fix.lng, fix.lat], zoom: USER_ZOOM, duration: 600 });
   }, [fix]);
 
-  const onRegionChangeComplete = useCallback(
-    (next: Region, details?: { isGesture?: boolean }) => {
-      setRegion(next);
-      const bbox = regionToBbox(next);
+  const onRegionDidChange = useCallback(
+    (e: NativeSyntheticEvent<ViewStateChangeEvent>) => {
+      const { bounds, center: c, userInteraction } = e.nativeEvent;
+      const bbox = boundsToBbox(bounds);
+      setCenter({ lng: c[0], lat: c[1] });
       setLocalViewport(bbox);
       setViewport(bbox);
-      if (details?.isGesture) setFollowUser(false);
+      if (userInteraction) setFollowUser(false);
     },
     [setViewport],
   );
@@ -86,10 +83,7 @@ export function HomeMap() {
     }
     if (!fix) return;
     setFollowUser(true);
-    mapRef.current?.animateToRegion(
-      { latitude: fix.lat, longitude: fix.lng, latitudeDelta: USER_ZOOM_DELTA, longitudeDelta: USER_ZOOM_DELTA },
-      400,
-    );
+    cameraRef.current?.easeTo({ center: [fix.lng, fix.lat], zoom: USER_ZOOM, duration: 400 });
   }, [permission, fix, request]);
 
   const openReport = useCallback(
@@ -101,8 +95,8 @@ export function HomeMap() {
   );
 
   // Distances are measured from the user when known, else from the map center.
-  const originLat = fix ? fix.lat : region.latitude;
-  const originLng = fix ? fix.lng : region.longitude;
+  const originLat = fix ? fix.lat : center.lat;
+  const originLng = fix ? fix.lng : center.lng;
   const items = useMemo<SheetItem[]>(() => {
     const origin = { lat: originLat, lng: originLng };
     const queued: SheetItem[] = pendingReports.map((report) => ({
@@ -120,32 +114,24 @@ export function HomeMap() {
   }, [reports, pendingReports, originLat, originLng]);
 
   const userFarFromView =
-    fix && !followUser && haversineDistanceM({ lat: fix.lat, lng: fix.lng }, bboxCenter(regionToBbox(region))) > RECENTER_THRESHOLD_M;
+    fix && !followUser && haversineDistanceM({ lat: fix.lat, lng: fix.lng }, center) > RECENTER_THRESHOLD_M;
 
   return (
     <View className="flex-1 bg-surface">
-      <MapView
-        ref={mapRef}
+      <AppMap
         style={{ flex: 1 }}
-        initialRegion={DEFAULT_REGION}
-        onRegionChangeComplete={onRegionChangeComplete}
-        showsUserLocation={permission === "granted"}
-        showsMyLocationButton={false}
-        showsCompass={false}
-        toolbarEnabled={false}
-        rotateEnabled={false}
-        pitchEnabled={false}
+        attributionBottom="18%"
+        onRegionDidChange={onRegionDidChange}
         onPress={() => setSelectedId(null)}
         accessibilityLabel="Map of nearby flood reports"
       >
-        <ExpoGoBaseTiles />
+        <Camera
+          ref={cameraRef}
+          initialViewState={{ center: [DEFAULT_CENTER.lng, DEFAULT_CENTER.lat], zoom: DEFAULT_ZOOM }}
+        />
+        {permission === "granted" ? <UserLocation /> : null}
         {fix && fix.accuracyM != null && fix.accuracyM > POOR_ACCURACY_M ? (
-          <Circle
-            center={{ latitude: fix.lat, longitude: fix.lng }}
-            radius={fix.accuracyM}
-            strokeColor="rgba(14,116,144,0.4)"
-            fillColor="rgba(14,116,144,0.12)"
-          />
+          <AccuracyCircle center={{ lat: fix.lat, lng: fix.lng }} radiusM={fix.accuracyM} />
         ) : null}
         {reports.map((r) => (
           <ReportMarker key={r.id} report={r} selected={r.id === selectedId} onPress={openReport} />
@@ -153,8 +139,7 @@ export function HomeMap() {
         {pendingReports.map((r) => (
           <ReportMarker key={r.id} report={r} selected={false} onPress={() => {}} pending />
         ))}
-      </MapView>
-      <ExpoGoTileAttribution bottom="18%" />
+      </AppMap>
 
       {/* Top overlays */}
       <View pointerEvents="box-none" className="absolute left-0 right-0 px-4" style={{ top: insets.top + 8 }}>
