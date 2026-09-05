@@ -39,20 +39,27 @@ function decimate(coords: number[][], max: number): number[][] {
 
 // ---- Provider: openrouteservice ------------------------------------------------------------
 
+/**
+ * Resolves a place name to coordinates. Autocomplete with a focus point ranks nearby venues
+ * first ("SM Marikina" resolves to the mall in Marikina, not a same-brand mall 50 km away);
+ * plain search is the fallback for full addresses the autocomplete index does not carry.
+ */
 async function geocode(apiKey: string, text: string, focus: LatLng): Promise<{ lat: number; lng: number; label: string } | null> {
-  const url = new URL(`${ORS_BASE}/geocode/search`);
-  url.searchParams.set("api_key", apiKey);
-  url.searchParams.set("text", text);
-  url.searchParams.set("size", "1");
-  url.searchParams.set("boundary.country", "PH");
-  url.searchParams.set("focus.point.lat", String(focus.lat));
-  url.searchParams.set("focus.point.lon", String(focus.lng));
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`geocode_failed:${res.status}`);
-  const data = await res.json();
-  const f = data.features?.[0];
-  if (!f) return null;
-  return { lng: f.geometry.coordinates[0], lat: f.geometry.coordinates[1], label: f.properties?.label ?? text };
+  for (const endpoint of ["autocomplete", "search"]) {
+    const url = new URL(`${ORS_BASE}/geocode/${endpoint}`);
+    url.searchParams.set("api_key", apiKey);
+    url.searchParams.set("text", text);
+    url.searchParams.set("size", "1");
+    url.searchParams.set("boundary.country", "PH");
+    url.searchParams.set("focus.point.lat", String(focus.lat));
+    url.searchParams.set("focus.point.lon", String(focus.lng));
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`geocode_failed:${res.status}`);
+    const data = await res.json();
+    const f = data.features?.[0];
+    if (f) return { lng: f.geometry.coordinates[0], lat: f.geometry.coordinates[1], label: f.properties?.label ?? text };
+  }
+  return null;
 }
 
 async function directions(apiKey: string, from: LatLng, to: LatLng) {
