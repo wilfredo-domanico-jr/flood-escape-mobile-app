@@ -1,5 +1,8 @@
-import { Map as MapLibreMap, type MapProps } from "@maplibre/maplibre-react-native";
+import { LogManager, Map as MapLibreMap, type MapProps } from "@maplibre/maplibre-react-native";
 import { type DimensionValue, Text, View, type ViewProps } from "react-native";
+
+// Tile requests are cancelled on every pan; MapLibre reports each as a warning, which floods LogBox in dev.
+LogManager.setLogLevel("error");
 
 /**
  * OpenFreeMap serves OpenMapTiles-styled vector tiles built from OpenStreetMap, free and without
