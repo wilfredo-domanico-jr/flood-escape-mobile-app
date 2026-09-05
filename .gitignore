@@ -50,3 +50,7 @@ app-example
 # Supabase CLI local state
 supabase/.temp
 supabase/.branches
+
+# Firebase config for push notifications (per-developer, obtain from the Firebase console)
+google-services.json
+GoogleService-Info.plist

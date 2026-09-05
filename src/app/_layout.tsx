@@ -8,6 +8,7 @@ import "react-native-reanimated";
 
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { useAuthStore } from "@/features/auth/authStore";
+import { NotificationsProvider } from "@/features/notifications/NotificationsProvider";
 import { OutboxRunner } from "@/features/offline/OutboxRunner";
 import { QUERY_CACHE_MAX_AGE_MS, queryClient, queryPersister } from "@/lib/query/queryClient";
 
@@ -41,6 +42,7 @@ export default function RootLayout() {
       >
         <AuthProvider>
           <OutboxRunner />
+          <NotificationsProvider />
           <RootStack />
         </AuthProvider>
         <StatusBar style="auto" />

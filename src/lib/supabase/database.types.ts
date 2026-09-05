@@ -100,6 +100,24 @@ type EvacuationCenterRow = {
   updated_at: string;
 };
 
+type NotificationPreferencesRow = {
+  user_id: string;
+  enabled: boolean;
+  min_severity: FloodSeverity;
+  quiet_start: string;
+  quiet_end: string;
+  notify_cleared: boolean;
+  updated_at: string;
+};
+
+type DevicePushTokenRow = {
+  token: string;
+  user_id: string;
+  platform: "ios" | "android";
+  created_at: string;
+  updated_at: string;
+};
+
 type PublicFloodReportRow = {
   id: string;
   severity: FloodSeverity;
@@ -160,6 +178,18 @@ export type Database = {
       };
       evacuation_centers: {
         Row: EvacuationCenterRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      notification_preferences: {
+        Row: NotificationPreferencesRow;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      device_push_tokens: {
+        Row: DevicePushTokenRow;
         Insert: never;
         Update: never;
         Relationships: [];
@@ -273,6 +303,18 @@ export type Database = {
           source_updated_at: string | null;
           distance_m: number;
         }[];
+      };
+      set_notification_preferences: {
+        Args: { p_enabled: boolean; p_min_severity: FloodSeverity; p_quiet_start: string; p_quiet_end: string; p_notify_cleared: boolean };
+        Returns: NotificationPreferencesRow;
+      };
+      register_push_token: {
+        Args: { p_token: string; p_platform: "ios" | "android" };
+        Returns: undefined;
+      };
+      unregister_push_token: {
+        Args: { p_token: string };
+        Returns: undefined;
       };
       reports_along_route: {
         Args: { p_route_geojson: string; p_buffer_m?: number };

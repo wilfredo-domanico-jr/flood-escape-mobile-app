@@ -23,7 +23,11 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.wilfredodomanico.floodescape"
+      "package": "com.wilfredodomanico.floodescape",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "output": "static",
@@ -54,11 +58,26 @@
           "locationWhenInUsePermission": "Flood Escape uses your location while the app is open to show flood reports near you and to place your own reports."
         }
       ],
-      "@maplibre/maplibre-react-native"
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#0E7490",
+          "defaultChannel": "route-alerts"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "99d8947a-d45d-4067-8260-7aa160095ab5"
+      }
+    },
+    "owner": "fredz_2000"
   }
 }

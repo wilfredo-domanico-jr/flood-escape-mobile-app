@@ -12,6 +12,7 @@ import { Screen } from "@/components/ui/Screen";
 import { TextField } from "@/components/ui/TextField";
 import { SEVERITY_META } from "@/constants/severity";
 import { colors } from "@/constants/theme";
+import { promptForRouteAlerts } from "@/features/notifications/promptForRouteAlerts";
 import { boundsForPoints } from "@/lib/geo/mapCamera";
 import { ReportCard } from "@/features/reports/ReportCard";
 import { useLocation } from "@/hooks/useLocation";
@@ -103,22 +104,28 @@ export function RouteScreen() {
       "e.g. Home to work",
       (name) => {
         if (!name?.trim()) return;
-        save.mutate({
-          name: name.trim(),
-          geometry: result.route.geometry,
-          origin: "Current location",
-          destination: result.route.destination.label,
-        });
+        save.mutate(
+          {
+            name: name.trim(),
+            geometry: result.route.geometry,
+            origin: "Current location",
+            destination: result.route.destination.label,
+          },
+          { onSuccess: () => void promptForRouteAlerts(name.trim()) },
+        );
       },
       "plain-text",
       `To ${result.route.destination.label}`.slice(0, 60),
     ) ??
-      save.mutate({
-        name: `To ${result.route.destination.label}`.slice(0, 60),
-        geometry: result.route.geometry,
-        origin: "Current location",
-        destination: result.route.destination.label,
-      });
+      save.mutate(
+        {
+          name: `To ${result.route.destination.label}`.slice(0, 60),
+          geometry: result.route.geometry,
+          origin: "Current location",
+          destination: result.route.destination.label,
+        },
+        { onSuccess: () => void promptForRouteAlerts(`To ${result.route.destination.label}`.slice(0, 60)) },
+      );
   };
 
   const shown = viewSaved

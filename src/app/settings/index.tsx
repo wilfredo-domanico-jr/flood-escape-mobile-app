@@ -51,7 +51,11 @@ export default function SettingsScreen() {
           />
         </Pressable>
       </Link>
-      <Row icon="notifications" title="Notifications" subtitle="Coming soon" disabled />
+      <Link href="/settings/notifications" asChild>
+        <Pressable accessibilityRole="button">
+          <Row icon="notifications" title="Notifications" subtitle="Route alerts, severity, quiet hours" />
+        </Pressable>
+      </Link>
       <Link href="/settings/privacy" asChild>
         <Pressable accessibilityRole="button">
           <Row icon="shield-checkmark" title="Privacy" subtitle="Location blur, photo uploads, delete my data" />

@@ -24,7 +24,7 @@ Work in progress, built in phases. See [Roadmap](#roadmap).
 | 8 | Offline banner, client-side staleness for cached rows, Activity with retry/discard, Wi-Fi-only photos, location blur, delete my data | Done |
 | 9 | Route safety: openrouteservice behind an Edge Function, buffered PostGIS route query, explainable risk levels, saved routes | Done |
 | 10 | Evacuation centers, hospitals, fire and police with KNN nearest query, filters, directions deep links | Done |
-| 11 | Push notifications (EAS development build) | Next |
+| 11 | Push notifications (development build) | Done |
 | 12 | Testing, performance, polish | Planned |
 
 ## Tech stack
@@ -99,6 +99,32 @@ Prerequisites: Node 20+, npm, Android Studio (SDK + JDK 17 or newer) or Xcode, a
    ```
 
    On Windows point `JAVA_HOME` at a JDK 17+ (Android Studio ships one under `jbr`) and `ANDROID_HOME` at the SDK before the first build.
+
+## Push notifications
+
+Alerts go out for saved routes only: a new report of caution or worse within the route buffer, an
+impassable report reaching high confidence, and optionally "all clear". Rules (severity threshold,
+quiet hours, one push per route per 30 minutes, never the author) live in SQL and are mirrored in
+`src/lib/notifications/rules.ts` with tests on both sides. Delivery: a trigger fills
+`notification_outbox`, pg_cron calls the `send-push` Edge Function every minute, and the function
+talks to the Expo Push API and prunes dead tokens from receipts.
+
+To receive pushes on Android you need Firebase Cloud Messaging once per project:
+
+1. Create a Firebase project at https://console.firebase.google.com, add an Android app with the
+   package name `com.wilfredodomanico.floodescape`, and download `google-services.json` into the repo
+   root. It is gitignored; `app.config.js` picks it up automatically.
+2. In Firebase, Project settings, Service accounts, generate a private key (JSON) and upload it with
+   `npx eas-cli credentials` (Android, push notifications, FCM V1) so Expo's push service can deliver.
+3. Rebuild the app: `npx expo run:android`.
+
+Server side, set the shared secret the cron job uses (any random string) and store the same value
+plus the function URL in Vault:
+
+```bash
+npx supabase secrets set PUSH_CRON_SECRET=<random>
+npx supabase db query "select vault.create_secret('<random>', 'push_cron_secret'); select vault.create_secret('https://<project-ref>.supabase.co/functions/v1/send-push', 'push_function_url');"
+```
 
 ## Testing what exists
 

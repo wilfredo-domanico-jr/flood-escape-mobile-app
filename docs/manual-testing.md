@@ -94,9 +94,29 @@ account. Without it the screen shows "Route checks aren't set up on this server 
 | Tap Directions | The platform maps app opens with the destination set. |
 | Location off | Distances measured from Metro Manila center with a card offering to enable location. |
 
+## Phase 11: push notifications
+
+Needs the development build made after `google-services.json` was added (see README, "Push
+notifications"). Alerts only concern saved routes, so save one on the Route tab first. A second
+phone (or account) must create the reports: your own reports never notify you.
+
+| Step | Expect |
+|---|---|
+| Save a route | An alert asking "Warn you if this route floods?"; Turn on shows the system permission prompt. |
+| Settings, Notifications | "This phone is registered for alerts"; a row in `device_push_tokens` for your user. |
+| Show me an example alert | A notification appears within a second with the route-alert sound. Tapping it does nothing (it is local). |
+| Phone B reports caution or worse within 75 m of the route | Within about 60 seconds Phone A gets "Flooding reported near your route". `notification_outbox` shows the row as sent with a ticket id. |
+| Phone B reports again on the same route within 30 minutes | No second push; no new outbox row (throttled by the unique index). |
+| Tap the notification | The app opens on that report, also from a cold start. |
+| Set "Alert me from" to Dangerous, Phone B reports caution | No push. |
+| Set quiet hours to cover now, Phone B reports dangerous | No push. Phone B reports impassable: push arrives anyway. |
+| Turn on "Tell me when reports clear", resolve every report along the route | One "Reports along your route have cleared" push. |
+| Toggle the route's alert switch off on the Route tab | No pushes for that route. |
+| Notifications denied in system settings | Settings shows "Notifications are off" with an Open system settings button; saving a route still works. |
+
 ## Known gaps to keep in mind
 
 - Sample facility coordinates are approximate. Replace them with LGU or NDRRMC open data before relying on them.
-- Push notifications (Phase 11) need an EAS development build and are not built yet.
+- Push delivery on Android needs the Firebase config in the build; without it Settings says so and everything else keeps working.
 - Retention deletes rows but cannot delete Storage objects from SQL; an Edge Function will handle orphaned photos in Phase 11.
 - Maps come from OpenFreeMap (OpenStreetMap data). No key is needed; attribution is shown on every map.
