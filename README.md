@@ -1,5 +1,9 @@
 # Flood Escape
 
+<p align="center">
+  <img src="docs/screenshots/logo.png" width="120" alt="Flood Escape logo">
+</p>
+
 A hyperlocal, crowdsourced flood-awareness and route-safety app for Metro Manila.
 
 > People often discover that a road is flooded only after they have already reached it.
@@ -7,6 +11,20 @@ A hyperlocal, crowdsourced flood-awareness and route-safety app for Metro Manila
 Flood Escape answers one question: **"Is my route safe right now?"** Users report flooding from their GPS position with a severity, an optional photo, and a note. Other users see nearby reports and confirm whether the water is still there. Every report carries its age and an explainable confidence score, the app keeps working offline, updates live, and warns users whose saved routes are affected.
 
 Flood information is crowdsourced and treated as **untrusted**. The app never claims a road is safe, only that no recent reports were found.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/onboarding.png" width="180" alt="Onboarding"><br><sub>Onboarding, no sign-up</sub></td>
+    <td align="center"><img src="docs/screenshots/map.jpg" width="180" alt="Live map"><br><sub>Live map, viewport-scoped reports</sub></td>
+    <td align="center"><img src="docs/screenshots/report.jpg" width="180" alt="Report flooding"><br><sub>Report in three taps</sub></td>
+    <td align="center"><img src="docs/screenshots/route.png" width="180" alt="Route check"><br><sub>Is my route safe?</sub></td>
+    <td align="center"><img src="docs/screenshots/notifications.png" width="180" alt="Alerts"><br><sub>Saved-route alerts, quiet hours</sub></td>
+  </tr>
+</table>
+
+Captured on a physical Android device (Infinix X6885, Android 15) from the development build. Map tiles by OpenFreeMap, data from OpenStreetMap contributors.
 
 ## Status
 
@@ -62,12 +80,12 @@ Business logic lives in two places only: Postgres functions (authoritative) and 
 
 ### Engineering themes
 
-- **Geospatial queries**: PostGIS `geography` columns with GIST indexes; viewport-scoped and radius queries via `ST_DWithin`; route risk via a buffered `LineString` intersection.
-- **Trust scoring**: an explainable, additive confidence formula (recency decay, independent confirmations, contradictions, photo evidence, damped reputation) implemented once in SQL and mirrored in TypeScript with shared fixtures.
-- **Report lifecycle**: explicit states (active, stale, disputed, resolved) with severity-dependent staleness windows, driven by triggers and a cron sweep.
-- **Offline-first**: one write path through a SQLite outbox with idempotent `client_id` retries; cached reads with visible staleness.
-- **Realtime**: subscriptions scoped to grid cells covering the viewport, cleaned up on blur and background.
-- **Privacy and security**: reporter identity split into a private table, RLS on every table, all mutations through rate-limited RPCs, EXIF stripped before upload.
+- **Geospatial queries** ([`reports_along_route`](supabase/migrations/20260904001400_routes.sql), [`routeRisk.ts`](src/lib/geo/routeRisk.ts)): PostGIS `geography` columns with GIST indexes; viewport-scoped and radius queries via `ST_DWithin`; route risk via a buffered `LineString` intersection.
+- **Trust scoring** ([`compute_confidence`](supabase/migrations/20260904000600_confidence.sql), [`confidence.ts`](src/lib/confidence/confidence.ts), [shared fixture](src/lib/confidence/__fixtures__/compute_confidence.json)): an explainable, additive confidence formula (recency decay, independent confirmations, contradictions, photo evidence, damped reputation) implemented once in SQL and mirrored in TypeScript with shared fixtures.
+- **Report lifecycle** ([`verify_lifecycle.sql`](supabase/migrations/20260904001000_verify_lifecycle.sql), [`lifecycle.ts`](src/lib/confidence/lifecycle.ts)): explicit states (active, stale, disputed, resolved) with severity-dependent staleness windows, driven by triggers and a cron sweep.
+- **Offline-first** ([`outbox.ts`](src/features/offline/outbox.ts), [`drainOutbox.ts`](src/features/offline/drainOutbox.ts)): one write path through a SQLite outbox with idempotent `client_id` retries; cached reads with visible staleness.
+- **Realtime** ([`cells.ts`](src/lib/geo/cells.ts), [`useReportsRealtime.ts`](src/features/map/useReportsRealtime.ts)): subscriptions scoped to grid cells covering the viewport, cleaned up on blur and background.
+- **Privacy and security** ([`flood_reports.sql`](supabase/migrations/20260904000400_flood_reports.sql), [`compressPhoto.ts`](src/lib/media/compressPhoto.ts)): reporter identity split into a private table, RLS on every table, all mutations through rate-limited RPCs, EXIF stripped before upload.
 
 ## Getting started
 
@@ -180,4 +198,4 @@ Deliberately not built: flood prediction or forecasting, sensor integration, gov
 
 ## License
 
-Private portfolio project. All rights reserved.
+Copyright (c) 2026 Wilfredo Domanico. All rights reserved. Shared for demonstration and portfolio purposes only; see [LICENSE](LICENSE).
