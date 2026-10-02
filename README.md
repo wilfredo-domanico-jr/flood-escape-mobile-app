@@ -4,6 +4,10 @@
   <img src="docs/screenshots/logo.png" width="120" alt="Flood Escape logo">
 </p>
 
+<p align="center">
+  <a href="https://github.com/wilfredo-domanico-jr/flood-escape-mobile-app/actions/workflows/ci.yml"><img src="https://github.com/wilfredo-domanico-jr/flood-escape-mobile-app/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+</p>
+
 A hyperlocal, crowdsourced flood-awareness and route-safety app for Metro Manila.
 
 > People often discover that a road is flooded only after they have already reached it.
