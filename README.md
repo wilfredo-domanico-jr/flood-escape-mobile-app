@@ -30,6 +30,20 @@ Flood information is crowdsourced and treated as **untrusted**. The app never cl
 
 Captured on a physical Android device (Infinix X6885, Android 15) from the development build. Map tiles by OpenFreeMap, data from OpenStreetMap contributors.
 
+## Try it
+
+<table>
+  <tr>
+    <td>
+      <b>Android APK, no store needed.</b><br><br>
+      <a href="https://github.com/wilfredo-domanico-jr/flood-escape-mobile-app/releases/latest"><b>Download the latest preview build</b></a><br>
+      <sub>About 150 MB. Android 8 or newer. Open the file on your phone and allow installation from this source when asked.</sub><br><br>
+      Built in the cloud with EAS Build from the <code>preview</code> profile in <a href="eas.json">eas.json</a>, signed with the project's EAS-managed keystore.
+    </td>
+    <td align="center"><img src="docs/screenshots/apk-qr.png" width="120" alt="QR code linking to the latest release"><br><sub>Scan on your phone</sub></td>
+  </tr>
+</table>
+
 ## Status
 
 Work in progress, built in phases. See [Roadmap](#roadmap).
