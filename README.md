@@ -30,6 +30,14 @@ Flood information is crowdsourced and treated as **untrusted**. The app never cl
 
 Captured on a physical Android device (Infinix X6885, Android 15) from the development build. Map tiles by OpenFreeMap, data from OpenStreetMap contributors.
 
+### Demo
+
+<p align="center">
+  <img src="docs/screenshots/demo.gif" width="300" alt="Screen recording: map, report flooding form, route safety check">
+</p>
+
+Map, the three-tap report form, and a live route check against recent reports. Recorded on the same device; the reporter's own location is blurred. An MP4 of the same clip is in [`docs/screenshots/demo.mp4`](docs/screenshots/demo.mp4).
+
 ## Try it
 
 <table>
