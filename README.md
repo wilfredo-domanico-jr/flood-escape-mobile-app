@@ -47,6 +47,7 @@ Map, the three-tap report form, and a live route check against recent reports. R
       <a href="https://github.com/wilfredo-domanico-jr/flood-escape-mobile-app/releases/latest"><b>Download the latest preview build</b></a><br>
       <sub>About 150 MB. Android 8 or newer. Open the file on your phone and allow installation from this source when asked.</sub><br><br>
       Built in the cloud with EAS Build from the <code>preview</code> profile in <a href="eas.json">eas.json</a>, signed with the project's EAS-managed keystore.
+      <br><br><sub>The codebase is cross-platform (React Native + Expo) and the iOS configuration is in place. There is no iOS download because Apple only distributes through the App Store or TestFlight, which needs a paid Apple Developer account; an iOS build is one <code>eas build --platform ios</code> away once that exists.</sub>
     </td>
     <td align="center"><img src="docs/screenshots/apk-qr.png" width="120" alt="QR code linking to the latest release"><br><sub>Scan on your phone</sub></td>
   </tr>
