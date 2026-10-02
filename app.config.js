@@ -4,12 +4,14 @@ const fs = require("fs");
 const path = require("path");
 
 module.exports = ({ config }) => {
-  const googleServices = path.join(__dirname, "google-services.json");
+  // On EAS Build the file arrives as a secret file variable (GOOGLE_SERVICES_JSON holds its path);
+  // locally it sits next to this file and is gitignored.
+  const googleServices = process.env.GOOGLE_SERVICES_JSON || path.join(__dirname, "google-services.json");
   return {
     ...config,
     android: {
       ...config.android,
-      ...(fs.existsSync(googleServices) ? { googleServicesFile: "./google-services.json" } : {}),
+      ...(fs.existsSync(googleServices) ? { googleServicesFile: googleServices } : {}),
     },
   };
 };
