@@ -20,7 +20,6 @@
   ],
   "exclude": [
     "node_modules",
-    "app-example",
     "dist",
     "android",
     "ios",
